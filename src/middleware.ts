@@ -4,9 +4,22 @@ import { NextRequest, NextResponse } from 'next/server'
 const secret: string = process.env.AUTH_SECRET as string
 
 export async function middleware(req: NextRequest) {
+  const pathname = req.nextUrl.pathname
   const token = await getToken({ req, secret })
-  console.log(token)
-  return NextResponse.next()
+
+  if (pathname === '/auth') {
+    if (token) {
+      return NextResponse.redirect(new URL('/', req.nextUrl))
+    }
+  }
+
+  if (pathname.startsWith('/admin')) {
+    if (!token) {
+      return NextResponse.redirect(
+        new URL(`/auth?callback=${pathname}`, req.nextUrl)
+      )
+    }
+  }
 }
 
 export const config = {
