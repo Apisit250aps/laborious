@@ -3,7 +3,7 @@ import 'toastify-js/src/toastify.css'
 
 type ToastType = 'success' | 'error' | 'warning'
 
-export function Toast(text: string, type: ToastType = 'success') {
+export async function Toast(text: string, type: ToastType = 'success') {
   const backgroundMap: Record<ToastType, string> = {
     success: 'linear-gradient(to right, #00b09b, #96c93d)',
     error: 'linear-gradient(to right, #e52d27, #b31217)',
