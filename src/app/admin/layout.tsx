@@ -1,4 +1,5 @@
 import { MenuLink } from '@/components/share/navigate/Menu'
+import MenuParent from '@/components/share/navigate/MenuParent'
 
 export default function AdminLayout({
   children
@@ -33,10 +34,26 @@ export default function AdminLayout({
             <i className="ri-home-3-line"></i>
             Home
           </MenuLink>
-          <MenuLink href={'/admin/card'}>
-            <i className="ri-git-repository-line"></i>
-            Card Skill
-          </MenuLink>
+          <MenuParent title="Card managements">
+            <MenuLink href={'/admin/card'}>
+              <i className="ri-git-repository-line"></i>
+              Cards
+            </MenuLink>
+            <MenuLink href={'/admin/card/add'}>
+              <i className="ri-git-repository-commits-line"></i>
+              Card Add
+            </MenuLink>
+          </MenuParent>
+          <MenuParent title="Action managements">
+            <MenuLink href={'/admin/action'}>
+              <i className="ri-user-line"></i>
+              Actions
+            </MenuLink>
+            <MenuLink href={'/admin/action/add'}>
+              <i className="ri-user-add-line"></i>
+              Actions Add
+            </MenuLink>
+          </MenuParent>
         </ul>
       </div>
     </div>
