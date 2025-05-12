@@ -1,5 +1,8 @@
+'use client'
 import { MenuLink } from '@/components/share/navigate/Menu'
 import MenuParent from '@/components/share/navigate/MenuParent'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+const queryClient = new QueryClient()
 
 export default function AdminLayout({
   children
@@ -20,7 +23,9 @@ export default function AdminLayout({
             </label>
           </div>
         </div>
-        {children}
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
       </div>
       <div className="drawer-side">
         <label

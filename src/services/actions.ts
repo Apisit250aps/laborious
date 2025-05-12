@@ -1,5 +1,5 @@
 import { Action } from '@/models/actions'
-import { IResponse } from '@/types/services'
+import { IPagination, IResponse, Query } from '@/types/services'
 import axios, { AxiosError } from 'axios'
 
 export async function CreateActionService(
@@ -29,6 +29,36 @@ export async function CreateActionService(
     return {
       success: false,
       message: 'An unexpected error occurred while creating the action'
+    }
+  }
+}
+
+export async function GetActionService({
+  limit,
+  page
+}: Query): Promise<IResponse<IPagination<Action>>> {
+  try {
+    const { data: result } = await axios.get<IResponse<IPagination<Action>>>(
+      '/api/action',
+      { params: { limit, page } }
+    )
+    if (result.success) {
+      return result
+    }
+    throw new Error(result.message || 'Action get failed')
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ??
+          'Failed to get action due to server error'
+      }
+    }
+
+    return {
+      success: false,
+      message: 'An unexpected error occurred while get the action'
     }
   }
 }

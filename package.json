@@ -11,6 +11,8 @@
   "dependencies": {
     "@auth/mongodb-adapter": "^3.9.1",
     "@hookform/resolvers": "^5.0.1",
+    "@tanstack/react-query": "^5.76.0",
+    "@tanstack/react-table": "^8.21.3",
     "axios": "^1.9.0",
     "mongodb": "^6.16.0",
     "next": "15.3.2",
