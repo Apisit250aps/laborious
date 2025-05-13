@@ -1,16 +1,10 @@
-
-import { GetCardsService } from '@/services/cards';
-import { Pagination } from '@/types/services';
+import { GetCardsService } from '@/services/cards'
+import { useCardStore } from '@/stores/card'
 import { useQuery } from '@tanstack/react-query'
-import { useState } from 'react'
 
 export function useCard() {
-  const [pagination, setPagination] = useState<Pagination>({
-    limit: 100,
-    page: 1,
-    totalCount: 0,
-    totalPages: 0
-  })
+  const { pagination, setPagination } = useCardStore()
+
   const { data, isLoading, error } = useQuery({
     queryKey: ['cards', pagination.page, pagination.limit],
     queryFn: async () => {
@@ -18,13 +12,14 @@ export function useCard() {
         page: pagination.page,
         limit: pagination.limit
       })
-     
+
       if (result.success) {
-        setPagination((prev) => ({
-          ...prev,
+        setPagination({
+          page: result.data!.page,
+          limit: result.data!.limit,
           totalCount: result.data!.totalCount,
           totalPages: result.data!.totalPages
-        }))
+        })
         return result.data?.data || []
       }
 

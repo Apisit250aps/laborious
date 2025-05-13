@@ -9,7 +9,7 @@ export enum CardType {
 }
 
 export interface Card extends Document {
-  _id?: ObjectId
+  _id?: ObjectId | string
   title: string
   type: CardType
   quantity: number
