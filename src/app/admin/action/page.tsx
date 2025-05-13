@@ -22,12 +22,12 @@ const columns: ColumnDef<Action>[] = [
     header: 'Value'
   }
 ]
-export default function LocationsPage() {
+export default function ActionPage() {
   const { actions, isLoading, error, pagination, setPagination } = useActions()
 
   return (
     <CardContent
-      title="Locations"
+      title="Actions"
       actions={
         <PageControl pagination={pagination} setPagination={setPagination} />
       }
