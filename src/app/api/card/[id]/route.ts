@@ -4,8 +4,9 @@ import cards from '@/models/cards'
 import { IResponse } from '@/types/services'
 import { ObjectId } from 'mongodb'
 import { NextRequest, NextResponse } from 'next/server'
-import { Card, CardType } from '@/models/cards'
+
 import { cardSchema } from '@/models/schema/cardSchema'
+import { Card, CardType } from '@/types/card';
 
 type ParamsId = {
   params: Promise<{ id: string }>

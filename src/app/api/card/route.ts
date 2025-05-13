@@ -4,8 +4,9 @@ import cards from '@/models/cards'
 import { IPagination, IResponse } from '@/types/services'
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
-import { Card, CardType } from '@/models/cards'
+
 import { cardSchema } from '@/models/schema/cardSchema'
+import { Card, CardType } from '@/types/card';
 
 export async function POST(
   req: NextRequest

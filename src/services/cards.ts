@@ -1,4 +1,5 @@
-import { Card, CardType } from '@/models/cards'
+
+import { Card, CardType } from '@/types/card';
 import { IPagination, IResponse, Query } from '@/types/services'
 import axios, { AxiosError } from 'axios'
 
@@ -12,7 +13,7 @@ export async function CreateCardService(
 ): Promise<IResponse<Card>> {
   try {
     const { data: result } = await axios.post<IResponse<Card>>(
-      '/api/cards',
+      '/api/card',
       card
     )
 
@@ -51,7 +52,7 @@ export async function GetCardsService({
     if (type !== undefined) params.type = type
 
     const { data: result } = await axios.get<IResponse<IPagination<Card>>>(
-      '/api/cards',
+      '/api/card',
       { params }
     )
 
@@ -83,7 +84,7 @@ export async function UpdateCardService(
 ): Promise<IResponse<Card>> {
   try {
     const { data: result } = await axios.put<IResponse<Card>>(
-      `/api/cards/${id}`,
+      `/api/card/${id}`,
       card
     )
 
@@ -113,7 +114,7 @@ export async function UpdateCardService(
 export async function GetCardByIdService(id: string): Promise<IResponse<Card>> {
   try {
     const { data: result } = await axios.get<IResponse<Card>>(
-      `/api/cards/${id}`
+      `/api/card/${id}`
     )
 
     if (result.success) {
@@ -141,7 +142,7 @@ export async function GetCardByIdService(id: string): Promise<IResponse<Card>> {
 export async function DeleteCardService(id: string): Promise<IResponse<null>> {
   try {
     const { data: result } = await axios.delete<IResponse<null>>(
-      `/api/cards/${id}`
+      `/api/card/${id}`
     )
 
     if (result.success) {

@@ -10,6 +10,8 @@ import { useState } from 'react'
 import { z } from 'zod'
 import SelectField, { SelectOption } from '@/components/share/input/SelectField'
 import { CARD_TYPE } from '@/libs/games'
+import { CreateCardService } from '@/services/cards';
+import { Card } from '@/types/card';
 
 // Updated schema to match the Card interface
 const cardSchema = z
@@ -131,6 +133,7 @@ export default function AdminCardAddPage() {
     }
 
     console.log(data)
+    CreateCardService(data as Card)
     // // Process the data before submitting it (e.g., adjust values, format them, etc.)
     // const result = await CreateCardService(data) // Your API call to create the card
     // if (result.success) {

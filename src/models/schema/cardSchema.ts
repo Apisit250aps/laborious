@@ -1,5 +1,5 @@
+import { CardType } from '@/types/card';
 import { z } from 'zod'
-import { CardType } from '@/models/cards'
 
 export const cardSchema = z
   .object({
