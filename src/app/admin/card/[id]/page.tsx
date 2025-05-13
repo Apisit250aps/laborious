@@ -14,55 +14,18 @@ import { Card } from '@/types/card'
 import { GetActionService } from '@/services/actions'
 import { Toast } from '@/libs/toasty'
 
-// Updated schema to match the Card interface
-const cardSchema = z
-  .object({
-    title: z.string().min(1, 'Title is required'),
-    type: z.string().min(1, 'Please select a card type'),
-    quantity: z.number().int().min(1, 'Quantity must be positive'),
-    pick: z.union([z.number().min(1), z.literal(''), z.undefined()]).optional(),
-    danger: z.array(z.number()).optional(),
-    score: z
-      .union([z.number().min(0), z.literal(''), z.undefined()])
-      .optional(),
-    action: z.string().optional(),
-    token: z
-      .union([z.number().min(0), z.literal(''), z.undefined()])
-      .optional(),
-    level: z
-      .union([z.literal(1), z.literal(2), z.literal(''), z.undefined()])
-      .optional()
-  })
-  .refine(
-    (data) => {
-      // Skip validation if type is not selected
-      if (!data.type) return true
-
-      // Add validation rules based on card type
-      if (data.type === 'DANGER') {
-        const isPickValid =
-          data.pick !== undefined && data.pick !== '' && data.pick > 0
-        return isPickValid // danger จะ validate ใน component
-      }
-      if (['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
-        const isScoreValid =
-          data.score !== undefined && data.score !== '' && data.score >= 0
-        return isScoreValid
-      }
-      if (data.type === 'AGE') {
-        const isLevelValid =
-          data.level !== undefined &&
-          data.level !== '' &&
-          (data.level === 1 || data.level === 2)
-        return isLevelValid
-      }
-      return true
-    },
-    {
-      message: 'Please fill in all required fields for the selected card type',
-      path: ['type']
-    }
-  )
+// Simplified schema without complex refine validation
+const cardSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  type: z.string().min(1, 'Please select a card type'),
+  quantity: z.number().int().min(1, 'Quantity must be positive'),
+  pick: z.union([z.number().min(1), z.literal(''), z.undefined()]).optional(),
+  danger: z.array(z.number()).optional(),
+  score: z.union([z.number().min(-5).max(5), z.literal(''), z.undefined()]).optional(),
+  action: z.string().optional(),
+  token: z.union([z.number().min(0), z.literal(''), z.undefined()]).optional(),
+  level: z.union([z.literal(1), z.literal(2), z.literal(''), z.undefined()]).optional()
+})
 
 type CardForm = z.infer<typeof cardSchema>
 
@@ -83,16 +46,13 @@ export default function AdminCardEditPage() {
     setValue,
     clearErrors,
     reset,
-    formState: { errors }
+    formState: { errors },
+    setError
   } = useForm<CardForm>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
-      type: '',
-      quantity: 0,
-      pick: undefined,
-      score: undefined,
-      token: undefined,
-      level: undefined
+      quantity: 1, // เปลี่ยนจาก 0 เป็น 1
+      // ไม่ใส่ default values สำหรับ field อื่น
     }
   })
 
@@ -117,16 +77,16 @@ export default function AdminCardEditPage() {
       if (result.success && result.data) {
         const card = result.data
         
-        // Reset form with card data
+        // Reset form with card data - ไม่ fallback เป็น empty string
         reset({
           title: card.title || '',
-          type: card.type || '',
-          quantity: card.quantity || 0,
-          pick: card.pick || undefined,
-          score: card.score || 0,
-          token: card.token || undefined,
-          level: card.level || undefined,
-          action: (card.action as string) || ''
+          type: card.type, // ไม่ fallback เป็น ''
+          quantity: card.quantity || 1,
+          pick: card.pick,
+          score: card.score,
+          token: card.token,
+          level: card.level,
+          action: card.action?.toString() || ''
         })
 
         // Handle danger values if it's a DANGER card
@@ -164,6 +124,35 @@ export default function AdminCardEditPage() {
   }, [loadActions, loadCard])
 
   const onSubmit = async (data: CardForm) => {
+    // Custom validation before submit
+    if (data.type === 'DANGER') {
+      if (!data.pick || data.pick <= 0) {
+        setError('pick', { type: 'manual', message: 'Pick value is required for DANGER cards' })
+        Toast('Pick value is required for DANGER cards', 'error')
+        return
+      }
+      if (!dangerValues.trim()) {
+        Toast('Danger values are required for DANGER cards', 'error')
+        return
+      }
+    }
+    
+    if (['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
+      if (data.score === undefined || data.score === '') {
+        setError('score', { type: 'manual', message: 'Score is required for this card type' })
+        Toast('Score is required for this card type', 'error')
+        return
+      }
+    }
+    
+    if (data.type === 'AGE') {
+      if (!data.level || (data.level !== 1 && data.level !== 2)) {
+        setError('level', { type: 'manual', message: 'Level is required for AGE cards' })
+        Toast('Level is required for AGE cards', 'error')
+        return
+      }
+    }
+
     setIsLoading(true)
 
     try {
@@ -273,8 +262,9 @@ export default function AdminCardEditPage() {
           error={errors.type?.message}
           {...register('type', {
             onChange: () => {
-              // Clear errors when type changes
-              clearErrors()
+              // Clear เฉพาะ error ที่ไม่ใช่ type
+              clearErrors(['pick', 'score', 'token', 'level', 'danger', 'action'])
+              
               // Reset dependent field values
               setValue('pick', undefined)
               setValue('score', undefined)
@@ -342,6 +332,7 @@ export default function AdminCardEditPage() {
             className="w-full"
             label={'Level'}
             options={levelOption}
+            error={errors.level?.message}
             {...register('level', { valueAsNumber: true })}
           />
         )}

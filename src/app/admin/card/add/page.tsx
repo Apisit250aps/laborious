@@ -24,7 +24,7 @@ const cardSchema = z
     pick: z.union([z.number().min(1), z.literal(''), z.undefined()]).optional(),
     danger: z.array(z.number()).optional(),
     score: z
-      .union([z.number().min(0), z.literal(''), z.undefined()])
+      .union([z.number().min(-5).max(5), z.literal(''), z.undefined()])
       .optional(),
     action: z.string().optional(),
     token: z
@@ -47,7 +47,7 @@ const cardSchema = z
       }
       if (['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
         const isScoreValid =
-          data.score !== undefined && data.score !== '' && data.score >= 0
+          data.score !== undefined && data.score !== ''
         return isScoreValid
       }
       if (data.type === 'AGE') {
@@ -207,9 +207,9 @@ export default function AdminCardAddPage() {
         <InputField
           className="w-full"
           label="Quantity"
-          type='number'
+          type="number"
           error={errors.quantity?.message}
-          {...register('quantity',{ valueAsNumber: true })}
+          {...register('quantity', { valueAsNumber: true })}
         />
 
         <SelectField

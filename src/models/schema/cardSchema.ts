@@ -10,7 +10,7 @@ export const cardSchema = z
     quantity: z.number().int().default(0),
     pick: z.number().min(1).optional(),
     danger: z.array(z.number().min(0)).optional(),
-    score: z.number().min(0).optional(),
+    score: z.number().min(-5).max(5).optional(),
     action: z.string().optional(), // Action ObjectId as string
     token: z.number().min(0).optional(),
     level: z.union([z.literal(1), z.literal(2)]).optional()
