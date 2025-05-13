@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 
 import { cardSchema } from '@/models/schema/cardSchema'
-import { Card, CardType } from '@/types/card';
+import { Card, CardType } from '@/types/card'
 
 export async function POST(
   req: NextRequest
@@ -29,7 +29,8 @@ export async function POST(
       )
     }
 
-    const { title, type, pick, danger, score, action, token, level } = data
+    const { title, type, pick, danger, score, action, token, level, quantity } =
+      data
 
     // ✅ Check for uniqueness
     const exists = await cards.findOne({ title })
@@ -61,6 +62,7 @@ export async function POST(
     // ✅ Prepare card data based on type
     const cardData: Partial<Card> = {
       title,
+      quantity,
       type: type as CardType
     }
 

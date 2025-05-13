@@ -207,6 +207,7 @@ export default function AdminCardAddPage() {
         <InputField
           className="w-full"
           label="Quantity"
+          type='number'
           error={errors.quantity?.message}
           {...register('quantity')}
         />
