@@ -209,7 +209,7 @@ export default function AdminCardAddPage() {
           label="Quantity"
           type='number'
           error={errors.quantity?.message}
-          {...register('quantity')}
+          {...register('quantity',{ valueAsNumber: true })}
         />
 
         <SelectField
