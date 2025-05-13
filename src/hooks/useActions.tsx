@@ -12,13 +12,13 @@ export function useActions() {
     totalPages: 0
   })
   const { data, isLoading, error } = useQuery({
-    queryKey: ['cards', pagination.page, pagination.limit],
+    queryKey: ['actions', pagination.page, pagination.limit],
     queryFn: async () => {
       const result = await GetActionService({
         page: pagination.page,
         limit: pagination.limit
       })
-
+     
       if (result.success) {
         setPagination((prev) => ({
           ...prev,

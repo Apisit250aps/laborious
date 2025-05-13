@@ -11,6 +11,14 @@ const columns: ColumnDef<Action>[] = [
   {
     accessorKey: 'title',
     header: 'Title'
+  },
+  {
+    accessorKey: 'codex',
+    header: 'CODEX'
+  },
+  {
+    accessorKey: 'value',
+    header: 'Value'
   }
 ]
 export default function LocationsPage() {

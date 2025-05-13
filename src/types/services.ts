@@ -5,10 +5,10 @@ export interface IResponse<T = unknown> {
 }
 export interface IPagination<T = unknown> {
   data: T[]
-  totalCount: number
   page: number
   limit: number
   totalPages: number
+  totalCount: number
 }
 
 export type Pagination = {

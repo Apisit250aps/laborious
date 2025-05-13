@@ -1,6 +1,6 @@
 import client from '@/client'
 import actions, { actionSchema } from '@/models/actions'
-import { IResponse } from '@/types/services'
+import { IPagination, IResponse } from '@/types/services'
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { Action } from '@/models/actions'
@@ -72,6 +72,45 @@ export async function POST(
       {
         success: false,
         message: 'Server error'
+      },
+      { status: 500 }
+    )
+  }
+}
+export async function GET(
+  req: NextRequest
+): Promise<NextResponse<IResponse<IPagination<Action>>>> {
+  try {
+    await client.connect()
+
+    const url = req.nextUrl
+    const page = parseInt(url.searchParams.get('page') || '1', 10)
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10)
+
+    const skip = (page - 1) * limit
+
+    const [totalCount, data] = await Promise.all([
+      actions.countDocuments(),
+      actions.find({}).skip(skip).limit(limit).toArray()
+    ])
+
+    return NextResponse.json({
+      success: true,
+      message: 'Actions retrieved successfully',
+      data: {
+        data,
+        totalCount,
+        page,
+        limit,
+        totalPages: Math.ceil(totalCount / limit)
+      }
+    })
+  } catch (error) {
+    console.error(error)
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'Failed to retrieve actions',
       },
       { status: 500 }
     )
