@@ -6,7 +6,7 @@ import { useState } from 'react'
 
 export function useCard() {
   const [pagination, setPagination] = useState<Pagination>({
-    limit: 10,
+    limit: 100,
     page: 1,
     totalCount: 0,
     totalPages: 0
