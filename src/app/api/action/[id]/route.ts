@@ -1,9 +1,10 @@
 import client from '@/client'
-import actions, { actionSchema } from '@/models/actions'
+import actions from '@/models/actions'
 import { IResponse } from '@/types/services'
 import { ObjectId } from 'mongodb'
 import { NextRequest, NextResponse } from 'next/server'
 import { Action } from '@/models/actions'
+import { actionSchema } from '@/models/schema/actionSchema';
 
 type ParamsId = {
   params: Promise<{ id: string }>

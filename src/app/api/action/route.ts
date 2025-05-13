@@ -1,9 +1,10 @@
 import client from '@/client'
-import actions, { actionSchema } from '@/models/actions'
+import actions from '@/models/actions'
 import { IPagination, IResponse } from '@/types/services'
 import { NextRequest, NextResponse } from 'next/server'
 import { ObjectId } from 'mongodb'
 import { Action } from '@/models/actions'
+import { actionSchema } from '@/models/schema/actionSchema';
 
 export async function POST(
   req: NextRequest
