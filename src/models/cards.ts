@@ -9,34 +9,20 @@ export enum CardType {
   AGE = 'AGE'
 }
 
-interface BaseCard {
+export interface Card {
   _id?: ObjectId
   title: string
   type: CardType
+  // สำหรับ DANGER
+  pick?: number
+  danger?: number[]
+  // สำหรับ ROBINSON, KNOWLEDGE, AGE
+  score?: number
+  action?: Action | ObjectId
+  token?: number
+  // เฉพาะ AGE
+  level?: 1 | 2
 }
-
-export interface RobinsonCard extends BaseCard {
-  type: CardType.ROBINSON | CardType.KNOWLEDGE
-  score: number
-  action: Action | ObjectId  
-  token: number
-}
-
-export interface AgeCard extends BaseCard {
-  type: CardType.AGE
-  score: number
-  action: Action | ObjectId
-  token: number
-  level: 1 | 2
-}
-
-export interface DangerCard extends BaseCard {
-  type: CardType.DANGER
-  pick: number
-  danger: number[]
-}
-
-export type Card = RobinsonCard | AgeCard | DangerCard
 
 const cards = db.collection<Card>('cards')
 

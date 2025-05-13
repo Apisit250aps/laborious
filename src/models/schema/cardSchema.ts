@@ -1,38 +1,44 @@
 import { z } from 'zod'
-import { CardType } from '../cards';
+import { CardType } from '@/models/cards'
 
-export const baseCardSchema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  type: z.nativeEnum(CardType)
-})
+export const cardSchema = z
+  .object({
+    title: z.string().min(1, 'Title is required'),
+    type: z.nativeEnum(CardType, {
+      errorMap: () => ({ message: 'Invalid card type' })
+    }),
+    pick: z.number().min(1).optional(),
+    danger: z.array(z.number().min(0)).optional(),
+    score: z.number().min(0).optional(),
+    action: z.string().optional(), // Action ObjectId as string
+    token: z.number().min(0).optional(),
+    level: z.union([z.literal(1), z.literal(2)]).optional()
+  })
+  .refine(
+    (data) => {
+      // Validate required fields based on card type
+      if (data.type === CardType.DANGER) {
+        if (!data.pick || !data.danger || data.danger.length === 0) {
+          return false
+        }
+      } else if (
+        [CardType.ROBINSON, CardType.KNOWLEDGE, CardType.AGE].includes(
+          data.type
+        )
+      ) {
+        if (data.score === undefined) {
+          return false
+        }
+      }
 
-// Schema สำหรับ DangerCard
-const dangerCardSchema = baseCardSchema.extend({
-  type: z.literal(CardType.DANGER),
-  pick: z.number().min(1, 'Pick must be at least 1'),
-  danger: z.array(z.number()).min(1, 'At least one danger required')
-})
+      // Validate AGE specific fields
+      if (data.type === CardType.AGE && !data.level) {
+        return false
+      }
 
-// Schema สำหรับ RobinsonCard & KnowledgeCard
-const robinsonCardSchema = baseCardSchema.extend({
-  type: z.union([z.literal(CardType.ROBINSON), z.literal(CardType.KNOWLEDGE)]),
-  score: z.number(),
-  action: z.union([z.string(), z.object({})]), // แนะนำให้ใช้ z.string().regex(/^[a-f\d]{24}$/i) ถ้าเป็น ObjectId
-  token: z.number()
-})
-
-// Schema สำหรับ AgeCard (extends Robinson)
-const ageCardSchema = robinsonCardSchema.extend({
-  type: z.literal(CardType.AGE),
-  level: z.union([z.literal(1), z.literal(2)])
-})
-
-// Union Schema
-export const cardSchema = z.discriminatedUnion('type', [
-  dangerCardSchema,
-  robinsonCardSchema,
-  ageCardSchema
-])
-
-// สำหรับ validate array
-export const cardArraySchema = z.array(cardSchema)
+      return true
+    },
+    {
+      message: 'Required fields are missing for the selected card type'
+    }
+  )

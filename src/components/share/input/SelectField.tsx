@@ -2,7 +2,7 @@ import React from 'react'
 
 export interface SelectOption {
   label: string
-  value: string
+  value: string | number
 }
 
 interface SelectFieldProps
@@ -26,9 +26,6 @@ export default function SelectField({
     <fieldset className="fieldset">
       <legend className="fieldset-legend">{label}</legend>
       <select className={`select ${className}`} {...props}>
-        <option defaultValue={''}>
-          -- Select --
-        </option>
         {options.map(({ value, label }) => (
           <option key={value} value={value}>
             {label}

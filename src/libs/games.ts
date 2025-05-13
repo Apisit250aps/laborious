@@ -1,4 +1,3 @@
-
 export const CODEX = [
   'HP',
   'CARD',
@@ -12,3 +11,5 @@ export const CODEX = [
   'ZERO',
   'STOP'
 ]
+
+export const CARD_TYPE = ['DANGER', 'ROBINSON', 'KNOWLEDGE', 'AGE']
