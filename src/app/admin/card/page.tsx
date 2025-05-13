@@ -7,6 +7,7 @@ import DataTable from '@/components/share/table/DataTable'
 import { useCard } from '@/hooks/useCards'
 import { Card } from '@/types/card'
 import { ColumnDef } from '@tanstack/react-table'
+import Link from 'next/link'
 
 const columns: ColumnDef<Card>[] = [
   {
@@ -40,6 +41,23 @@ const columns: ColumnDef<Card>[] = [
   {
     accessorKey: 'level',
     header: 'Level'
+  },
+  {
+    accessorKey: 'quantity',
+    header: 'Quantity'
+  },
+  {
+    header: 'Action',
+    cell: ({ row }) => (
+      <>
+        <Link
+          href={`/admin/card/${row.original._id}`}
+          className="btn btn-sm btn-outline"
+        >
+          <i className="ri-more-2-fill"></i>
+        </Link>
+      </>
+    )
   }
 ]
 export default function AdminCardPage() {

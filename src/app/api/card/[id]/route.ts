@@ -6,7 +6,7 @@ import { ObjectId } from 'mongodb'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { cardSchema } from '@/models/schema/cardSchema'
-import { Card, CardType } from '@/types/card';
+import { Card, CardType } from '@/types/card'
 
 type ParamsId = {
   params: Promise<{ id: string }>
@@ -82,9 +82,9 @@ export async function PUT(
     const { title, type, pick, danger, score, action, token, level } = data
 
     // ✅ Check if another card has the same title (exclude current card)
-    const exists = await cards.findOne({ 
-      title, 
-      _id: { $ne: new ObjectId(id) } 
+    const exists = await cards.findOne({
+      title,
+      _id: { $ne: new ObjectId(id) }
     })
     if (exists) {
       return NextResponse.json(
@@ -111,37 +111,49 @@ export async function PUT(
       actionId = new ObjectId(action)
     }
 
-    // ✅ Prepare update data based on type
-    const updateData: Partial<Card> & { $unset?: Record<string, 1> } = {
+    // เตรียม $set และ $unset แยกออกจากกัน
+    const setData: Partial<Card> = {
       title,
       type: type as CardType
     }
+    const unsetData: Record<string, 1> = {}
 
-    // Add type-specific fields
     if (type === CardType.DANGER) {
-      updateData.pick = pick
-      updateData.danger = danger
-      // Clear other type fields
-      updateData.$unset = { score: 1, action: 1, token: 1, level: 1 }
-    } else if ([CardType.ROBINSON, CardType.KNOWLEDGE, CardType.AGE].includes(type as CardType)) {
-      updateData.score = score
-      updateData.action = actionId
-      updateData.token = token
-      // Clear DANGER fields
-      updateData.$unset = { pick: 1, danger: 1 }
-      
+      setData.pick = pick
+      setData.danger = danger
+      Object.assign(unsetData, { score: 1, action: 1, token: 1, level: 1 })
+    } else if (
+      [CardType.ROBINSON, CardType.KNOWLEDGE, CardType.AGE].includes(
+        type as CardType
+      )
+    ) {
+      setData.score = score
+      setData.action = actionId
+      setData.token = token
+      Object.assign(unsetData, { pick: 1, danger: 1 })
+
       if (type === CardType.AGE) {
-        updateData.level = level
+        setData.level = level
       } else {
-        // Clear level if not AGE type
-        if (!updateData.$unset) updateData.$unset = {}
-        updateData.$unset.level = 1
+        unsetData.level = 1
       }
     }
 
+    // สร้าง update object
+    const updateOps: {
+      $set: Partial<Card>;
+      $unset?: Record<string, 1>;
+    } = {
+      $set: setData
+    }
+    if (Object.keys(unsetData).length > 0) {
+      updateOps.$unset = unsetData
+    }
+
+    // แล้วค่อยเอาไปใช้กับ findOneAndUpdate
     const result = await cards.findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: updateData, ...updateData.$unset && { $unset: updateData.$unset } },
+      updateOps,
       { returnDocument: 'after' }
     )
 

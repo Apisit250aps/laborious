@@ -18,7 +18,7 @@ export interface Card extends Document {
   danger?: number[]
   // สำหรับ ROBINSON, KNOWLEDGE, AGE
   score?: number
-  action?: Action | ObjectId
+  action?: Action | ObjectId | string
   token?: number
   // เฉพาะ AGE
   level?: 1 | 2
