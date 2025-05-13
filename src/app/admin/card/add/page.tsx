@@ -4,14 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import InputField from '@/components/share/input/InputField'
 import Button from '@/components/share/button/button'
 import CardContent from '@/components/share/layouts/CardContent'
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 // import { Toast } from '@/libs/toasty'
-// import { useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 import SelectField, { SelectOption } from '@/components/share/input/SelectField'
 import { CARD_TYPE } from '@/libs/games'
-import { CreateCardService } from '@/services/cards';
-import { Card } from '@/types/card';
+import { CreateCardService } from '@/services/cards'
+import { Card } from '@/types/card'
+import { GetActionService } from '@/services/actions'
+import { Toast } from '@/libs/toasty';
 
 // Updated schema to match the Card interface
 const cardSchema = z
@@ -65,9 +67,27 @@ const cardSchema = z
 type CardForm = z.infer<typeof cardSchema>
 
 export default function AdminCardAddPage() {
-  // const router = useRouter()
+  const router = useRouter()
+
   const [isLoading, setIsLoading] = useState(false)
   const [dangerValues, setDangerValues] = useState<string>('')
+  const [actionOption, setActionOption] = useState<SelectOption[]>([])
+
+  const loadActions = useCallback(async () => {
+    const result = await GetActionService({ limit: 1000 })
+    if (result.success) {
+      const actions = result.data!.data
+      const options = actions.map(
+        (act) =>
+          ({ label: act.title, value: act._id?.toString() } as SelectOption)
+      )
+      setActionOption(options)
+    }
+  }, [])
+
+  useEffect(() => {
+    loadActions()
+  }, [loadActions])
 
   const {
     register,
@@ -101,48 +121,57 @@ export default function AdminCardAddPage() {
   const onSubmit = async (data: CardForm) => {
     setIsLoading(true)
 
-    // Convert danger string to array
-    if (data.type === 'DANGER' && dangerValues) {
-      const dangerArray = dangerValues
-        .split(',')
-        .map((val) => parseInt(val.trim()))
-        .filter((val) => !isNaN(val))
-      if (dangerArray.length === 0) {
-        // Show error if danger values are required but empty
-        console.error('Danger values are required for DANGER cards')
-        setIsLoading(false)
-        return
+    try {
+      // Convert danger string to array (ถ้า type เป็น DANGER)
+      if (data.type === 'DANGER' && dangerValues) {
+        const dangerArray = dangerValues
+          .split(',')
+          .map((val) => parseInt(val.trim()))
+          .filter((val) => !isNaN(val))
+
+        if (dangerArray.length === 0) {
+          Toast('Danger values are required for DANGER cards', 'error')
+          setIsLoading(false)
+          return
+        }
+
+        data.danger = dangerArray
       }
-      data.danger = dangerArray
-    }
 
-    // Remove undefined fields based on card type
-    if (data.type !== 'DANGER') {
-      delete data.pick
-      delete data.danger
-    }
-    if (!['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
-      delete data.score
-    }
-    if (data.type !== 'AGE') {
-      delete data.level
-    }
-    if (data.type === 'DANGER') {
-      delete data.action
-      delete data.token
-    }
+      // ลบฟิลด์ที่ไม่จำเป็นตาม type
+      if (data.type !== 'DANGER') {
+        delete data.pick
+        delete data.danger
+      }
 
-    console.log(data)
-    CreateCardService(data as Card)
-    // // Process the data before submitting it (e.g., adjust values, format them, etc.)
-    // const result = await CreateCardService(data) // Your API call to create the card
-    // if (result.success) {
-    //   await Toast('Card created successfully', 'success')
-    //   router.push('/admin/card')
-    // } else {
-    //   Toast(result.message || 'Failed to create card', 'error')
-    // }
-    setIsLoading(false)
+      if (!['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
+        delete data.score
+      }
+
+      if (data.type !== 'AGE') {
+        delete data.level
+      }
+
+      if (data.type === 'DANGER') {
+        delete data.action
+        delete data.token
+      }
+
+      // เรียก API
+      const result = await CreateCardService(data as Card)
+
+      if (result.success) {
+        await Toast('Card created successfully', 'success')
+        router.push('/admin/card')
+      } else {
+        Toast(result.message || 'Failed to create card', 'error')
+      }
+    } catch (error) {
+      console.error(error)
+      Toast('An unexpected error occurred', 'error')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   // Helper function to check if field should be shown
@@ -224,7 +253,8 @@ export default function AdminCardAddPage() {
         )}
 
         {shouldShowField('action') && (
-          <InputField
+          <SelectField
+            options={actionOption}
             className="w-full"
             label="Action"
             error={errors.action?.message}
