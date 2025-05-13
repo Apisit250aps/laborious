@@ -13,13 +13,14 @@ import { CARD_TYPE } from '@/libs/games'
 import { CreateCardService } from '@/services/cards'
 import { Card } from '@/types/card'
 import { GetActionService } from '@/services/actions'
-import { Toast } from '@/libs/toasty';
+import { Toast } from '@/libs/toasty'
 
 // Updated schema to match the Card interface
 const cardSchema = z
   .object({
     title: z.string().min(1, 'Title is required'),
     type: z.string().min(1, 'Please select a card type'),
+    quantity: z.number().int().min(1, 'Quantity must be positive'),
     pick: z.union([z.number().min(1), z.literal(''), z.undefined()]).optional(),
     danger: z.array(z.number()).optional(),
     score: z
@@ -100,6 +101,7 @@ export default function AdminCardAddPage() {
     resolver: zodResolver(cardSchema),
     defaultValues: {
       type: '',
+      quantity: 0,
       pick: undefined,
       score: undefined,
       token: undefined,
@@ -200,6 +202,13 @@ export default function AdminCardAddPage() {
           label="Title"
           error={errors.title?.message}
           {...register('title')}
+        />
+
+        <InputField
+          className="w-full"
+          label="Quantity"
+          error={errors.quantity?.message}
+          {...register('quantity')}
         />
 
         <SelectField

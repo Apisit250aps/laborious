@@ -1,4 +1,4 @@
-import { CardType } from '@/types/card';
+import { CardType } from '@/types/card'
 import { z } from 'zod'
 
 export const cardSchema = z
@@ -7,6 +7,7 @@ export const cardSchema = z
     type: z.nativeEnum(CardType, {
       errorMap: () => ({ message: 'Invalid card type' })
     }),
+    quantity: z.number().int().default(0),
     pick: z.number().min(1).optional(),
     danger: z.array(z.number().min(0)).optional(),
     score: z.number().min(0).optional(),

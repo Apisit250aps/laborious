@@ -1,5 +1,5 @@
-import { Action } from "@/models/actions";
-import { ObjectId } from "mongodb";
+import { Action } from '@/models/actions'
+import { ObjectId } from 'mongodb'
 
 export enum CardType {
   DANGER = 'DANGER',
@@ -12,6 +12,7 @@ export interface Card extends Document {
   _id?: ObjectId
   title: string
   type: CardType
+  quantity: number
   // สำหรับ DANGER
   pick?: number
   danger?: number[]
