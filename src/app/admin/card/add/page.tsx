@@ -13,7 +13,7 @@ import { CARD_TYPE } from '@/libs/games'
 import { CreateCardService } from '@/services/cards'
 import { Card } from '@/types/card'
 import { GetActionService } from '@/services/actions'
-import { Toast } from '@/libs/toasty'
+import { Toast } from '@/libs/callback'
 
 // Updated schema to match the Card interface
 const cardSchema = z

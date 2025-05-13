@@ -121,3 +121,28 @@ export async function GetActionByIdService(id: string): Promise<IResponse<Action
     }
   }
 }
+
+export async function DeleteActionService(id: string): Promise<IResponse<null>> {
+  try {
+    const { data: result } = await axios.delete<IResponse<null>>(`/api/action/${id}`)
+
+    if (result.success) {
+      return result
+    }
+
+    throw new Error(result.message || 'Failed to delete action')
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ?? 'Failed to delete action due to server error'
+      }
+    }
+
+    return {
+      success: false,
+      message: 'An unexpected error occurred while deleting the action'
+    }
+  }
+}

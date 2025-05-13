@@ -11,9 +11,13 @@ import TextField from '@/components/share/input/TextField'
 import Button from '@/components/share/button/button'
 import CardContent from '@/components/share/layouts/CardContent'
 import SelectField from '@/components/share/input/SelectField'
-import { Toast } from '@/libs/toasty'
+import { confirmDelete, Toast } from '@/libs/callback'
 import { CODEX } from '@/libs/games'
-import { GetActionByIdService, UpdateActionService } from '@/services/actions'
+import {
+  DeleteActionService,
+  GetActionByIdService,
+  UpdateActionService
+} from '@/services/actions'
 
 const actionSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -83,7 +87,7 @@ export default function AdminActionEditPage() {
     }
     setIsLoading(false)
   }
- 
+
   return (
     <CardContent title="Edit Action">
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -116,10 +120,30 @@ export default function AdminActionEditPage() {
           error={errors.description?.message}
           {...register('description')}
         />
-        <div className="flex justify-end">
-          <Button className="btn-outline" isLoading={isLoading}>
-            Save Changes
-          </Button>
+        <div className="flex justify-between">
+          <div className="">
+            <Button
+            type='button'
+              className="btn-outline btn-error"
+              onClick={() =>
+                confirmDelete(async () => {
+                  const result = await DeleteActionService(params.id)
+                  if (result.success){
+                    router.push("/admin/action")
+                    return result.success
+                  }
+                  return false
+                })
+              }
+            >
+              Delete
+            </Button>
+          </div>
+          <div className="">
+            <Button className="btn-outline" isLoading={isLoading}>
+              Save Changes
+            </Button>
+          </div>
         </div>
       </form>
     </CardContent>

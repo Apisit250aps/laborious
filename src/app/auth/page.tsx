@@ -1,6 +1,6 @@
 'use client'
 
-import { Toast } from '@/libs/toasty'
+import { Toast } from '@/libs/callback'
 import { signIn, SignInResponse } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 

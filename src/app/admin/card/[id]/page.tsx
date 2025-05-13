@@ -12,7 +12,7 @@ import { CARD_TYPE } from '@/libs/games'
 import { GetCardByIdService, UpdateCardService } from '@/services/cards'
 import { Card } from '@/types/card'
 import { GetActionService } from '@/services/actions'
-import { Toast } from '@/libs/toasty'
+import { Toast } from '@/libs/callback'
 
 // Simplified schema without complex refine validation
 const cardSchema = z.object({
