@@ -1,6 +1,7 @@
 'use client'
 
 import PageControl from '@/components/share/button/PageControl'
+import AlertDisplay from '@/components/share/callback/AlertDisplay';
 import CardContent from '@/components/share/layouts/CardContent'
 import DataTable from '@/components/share/table/DataTable'
 import { useActions } from '@/hooks/useActions'
@@ -32,9 +33,7 @@ export default function LocationsPage() {
       }
     >
       {error ? (
-        <div role="alert" className="alert alert-error alert-soft">
-          <span>{error.message}</span>
-        </div>
+        <AlertDisplay message={error.message} />
       ) : (
         <DataTable data={actions || []} loading={isLoading} columns={columns} />
       )}
