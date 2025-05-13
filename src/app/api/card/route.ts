@@ -138,11 +138,32 @@ export async function GET(
       filter.type = cardType
     }
 
-    const [totalCount, data] = await Promise.all([
+    const [totalCount, documents] = await Promise.all([
       cards.countDocuments(filter),
-      cards.find(filter).skip(skip).limit(limit).toArray()
+      cards
+        .aggregate([
+          { $match: filter },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $lookup: {
+              from: 'actions', // ชื่อ collection ของ action
+              localField: 'action',
+              foreignField: '_id',
+              as: 'actionData'
+            }
+          },
+          {
+            $unwind: {
+              path: '$actionData',
+              preserveNullAndEmptyArrays: true
+            }
+          }
+        ])
+        .toArray()
     ])
 
+    const data = documents as unknown as Card[]
     return NextResponse.json({
       success: true,
       message: 'Cards retrieved successfully',

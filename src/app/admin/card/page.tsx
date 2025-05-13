@@ -31,8 +31,9 @@ const columns: ColumnDef<Card>[] = [
     header: 'Score'
   },
   {
-    accessorKey: 'action',
-    header: 'Action'
+    accessorKey: 'actionData',
+    header: 'Action',
+    cell: ({ row }) => <>{row.original.actionData?.title}</>
   },
   {
     accessorKey: 'token',
