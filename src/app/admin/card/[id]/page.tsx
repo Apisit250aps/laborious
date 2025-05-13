@@ -9,10 +9,14 @@ import { useRouter, useParams } from 'next/navigation'
 import { z } from 'zod'
 import SelectField, { SelectOption } from '@/components/share/input/SelectField'
 import { CARD_TYPE } from '@/libs/games'
-import { GetCardByIdService, UpdateCardService } from '@/services/cards'
+import {
+  DeleteCardService,
+  GetCardByIdService,
+  UpdateCardService
+} from '@/services/cards'
 import { Card } from '@/types/card'
 import { GetActionService } from '@/services/actions'
-import { Toast } from '@/libs/callback'
+import { confirmDelete, Toast } from '@/libs/callback'
 
 // Simplified schema without complex refine validation
 const cardSchema = z.object({
@@ -21,10 +25,14 @@ const cardSchema = z.object({
   quantity: z.number().int().min(1, 'Quantity must be positive'),
   pick: z.union([z.number().min(1), z.literal(''), z.undefined()]).optional(),
   danger: z.array(z.number()).optional(),
-  score: z.union([z.number().min(-5).max(5), z.literal(''), z.undefined()]).optional(),
+  score: z
+    .union([z.number().min(-5).max(5), z.literal(''), z.undefined()])
+    .optional(),
   action: z.string().optional(),
   token: z.union([z.number().min(0), z.literal(''), z.undefined()]).optional(),
-  level: z.union([z.literal(1), z.literal(2), z.literal(''), z.undefined()]).optional()
+  level: z
+    .union([z.literal(1), z.literal(2), z.literal(''), z.undefined()])
+    .optional()
 })
 
 type CardForm = z.infer<typeof cardSchema>
@@ -51,7 +59,7 @@ export default function AdminCardEditPage() {
   } = useForm<CardForm>({
     resolver: zodResolver(cardSchema),
     defaultValues: {
-      quantity: 1, // เปลี่ยนจาก 0 เป็น 1
+      quantity: 1 // เปลี่ยนจาก 0 เป็น 1
       // ไม่ใส่ default values สำหรับ field อื่น
     }
   })
@@ -76,7 +84,7 @@ export default function AdminCardEditPage() {
       const result = await GetCardByIdService(cardId)
       if (result.success && result.data) {
         const card = result.data
-        
+
         // Reset form with card data - ไม่ fallback เป็น empty string
         reset({
           title: card.title || '',
@@ -127,7 +135,10 @@ export default function AdminCardEditPage() {
     // Custom validation before submit
     if (data.type === 'DANGER') {
       if (!data.pick || data.pick <= 0) {
-        setError('pick', { type: 'manual', message: 'Pick value is required for DANGER cards' })
+        setError('pick', {
+          type: 'manual',
+          message: 'Pick value is required for DANGER cards'
+        })
         Toast('Pick value is required for DANGER cards', 'error')
         return
       }
@@ -136,18 +147,24 @@ export default function AdminCardEditPage() {
         return
       }
     }
-    
+
     if (['ROBINSON', 'KNOWLEDGE', 'AGE'].includes(data.type)) {
       if (data.score === undefined || data.score === '') {
-        setError('score', { type: 'manual', message: 'Score is required for this card type' })
+        setError('score', {
+          type: 'manual',
+          message: 'Score is required for this card type'
+        })
         Toast('Score is required for this card type', 'error')
         return
       }
     }
-    
+
     if (data.type === 'AGE') {
       if (!data.level || (data.level !== 1 && data.level !== 2)) {
-        setError('level', { type: 'manual', message: 'Level is required for AGE cards' })
+        setError('level', {
+          type: 'manual',
+          message: 'Level is required for AGE cards'
+        })
         Toast('Level is required for AGE cards', 'error')
         return
       }
@@ -263,8 +280,15 @@ export default function AdminCardEditPage() {
           {...register('type', {
             onChange: () => {
               // Clear เฉพาะ error ที่ไม่ใช่ type
-              clearErrors(['pick', 'score', 'token', 'level', 'danger', 'action'])
-              
+              clearErrors([
+                'pick',
+                'score',
+                'token',
+                'level',
+                'danger',
+                'action'
+              ])
+
               // Reset dependent field values
               setValue('pick', undefined)
               setValue('score', undefined)
@@ -337,17 +361,37 @@ export default function AdminCardEditPage() {
           />
         )}
 
-        <div className="flex justify-end space-x-2">
-          <Button
-            type="button"
-            className="btn-secondary"
-            onClick={() => router.push('/admin/card')}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" className="btn-outline" isLoading={isLoading}>
-            Update Card
-          </Button>
+        <div className="flex justify-between">
+          <div className="">
+            <Button
+              type="button"
+              className="btn-outline btn-error"
+              onClick={() =>
+                confirmDelete(async () => {
+                  const result = await DeleteCardService(cardId)
+                  if (result.success) {
+                    router.push('/admin/card')
+                    return result.success
+                  }
+                  return false
+                })
+              }
+            >
+              Delete
+            </Button>
+          </div>
+          <div className=" space-x-2">
+            <Button
+              type="button"
+              className="btn-secondary"
+              onClick={() => router.push('/admin/card')}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="btn-outline" isLoading={isLoading}>
+              Update Card
+            </Button>
+          </div>
         </div>
       </form>
     </CardContent>
