@@ -81,21 +81,6 @@ export async function PUT(
 
     const { title, type, pick, danger, score, action, token, level } = data
 
-    // ✅ Check if another card has the same title (exclude current card)
-    const exists = await cards.findOne({
-      title,
-      _id: { $ne: new ObjectId(id) }
-    })
-    if (exists) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Card title already exists'
-        },
-        { status: 409 }
-      )
-    }
-
     // ✅ Handle action reference if it's a string (ObjectId)
     let actionId: ObjectId | undefined
     if (action && typeof action === 'string') {
