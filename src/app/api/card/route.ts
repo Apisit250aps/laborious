@@ -32,18 +32,6 @@ export async function POST(
     const { title, type, pick, danger, score, action, token, level, quantity } =
       data
 
-    // ✅ Check for uniqueness
-    const exists = await cards.findOne({ title })
-    if (exists) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Card title already exists'
-        },
-        { status: 409 }
-      )
-    }
-
     // ✅ Handle action reference if it's a string (ObjectId)
     let actionId: ObjectId | undefined
     if (action && typeof action === 'string') {
@@ -58,7 +46,6 @@ export async function POST(
       }
       actionId = new ObjectId(action)
     }
-
     // ✅ Prepare card data based on type
     const cardData: Partial<Card> = {
       title,
@@ -95,7 +82,6 @@ export async function POST(
         { status: 500 }
       )
     }
-
     return NextResponse.json(
       {
         success: true,
