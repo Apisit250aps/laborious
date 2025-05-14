@@ -11,7 +11,7 @@ import { create } from 'zustand'
 type CardStore = {
   cards: Card[]
   pagination: Pagination
-  loadCards: () => Promise<void>
+  loadCards: () => Promise<boolean>
   setPagination: (pagination: Pagination) => void
   addCard: (card: Card) => Promise<Card>
   editCard: (id: string, card: Card) => Promise<Card>
@@ -23,7 +23,7 @@ export const useCardStore = create<CardStore>((set, get) => ({
   pagination: {
     totalCount: 0,
     page: 1,
-    limit: 10,
+    limit: 1000,
     totalPages: 0
   },
 
@@ -43,11 +43,13 @@ export const useCardStore = create<CardStore>((set, get) => ({
             totalPages: Math.ceil(result.data!.totalCount / result.data!.limit)
           }
         }))
+        return result.success 
       } else {
         throw new Error(result.message)
       }
     } catch (error) {
       console.error(error)
+      return false
     }
   },
 

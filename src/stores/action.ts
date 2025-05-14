@@ -11,7 +11,7 @@ import {
 type ActionStore = {
   actions: Action[]
   pagination: Pagination
-  loadActions: () => Promise<void>
+  loadActions: () => Promise<boolean>
   setPagination: (pagination: Pagination) => void
   addAction: (action: Action) => Promise<Action>
   editAction: (id: string, action: Action) => Promise<Action>
@@ -23,7 +23,7 @@ export const useActionStore = create<ActionStore>((set, get) => ({
   pagination: {
     totalCount: 0,
     page: 1,
-    limit: 10,
+    limit: 1000,
     totalPages: 0
   },
 
@@ -43,11 +43,13 @@ export const useActionStore = create<ActionStore>((set, get) => ({
             totalPages: result.data!.totalPages
           }
         }))
+        return result.success
       } else {
         throw new Error(result.message)
       }
     } catch (error) {
       console.error(error)
+      return false
     }
   },
 

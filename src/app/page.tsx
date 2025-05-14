@@ -1,103 +1,106 @@
-import Image from "next/image";
+'use client'
+
+import CardContent from '@/components/share/layouts/CardContent'
+import { useActionStore } from '@/stores/action'
+import { useCardStore } from '@/stores/card'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useGameStore } from '@/stores/game'
+import { Card } from '@/types/card'
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { loadCards, cards } = useCardStore()
+  const { loadActions } = useActionStore()
+  const { robinsonCard, trash, score, setup, drawCard } = useGameStore()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [currentCard, setCurrentCard] = useState<Card | null>(null)
+  const initialized = useRef(false)
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const onInit = useCallback(async () => {
+    if (initialized.current) return
+    setLoading(true)
+    try {
+      await Promise.all([loadActions(), loadCards()])
+      setup(cards)
+      initialized.current = true
+    } catch (error) {
+      setError(error as string)
+    } finally {
+      setLoading(false)
+    }
+  }, [cards, loadActions, loadCards, setup])
+
+  const handleDrawCard = () => {
+    const card = drawCard()
+    if (card) {
+      setCurrentCard(card)
+    } else {
+      alert('No cards left to draw!')
+    }
+  }
+
+  useEffect(() => {
+    onInit()
+  }, [onInit])
+
+  if (loading)
+    return (
+      <CardContent title="Game">
+        <p>Loading...</p>
+      </CardContent>
+    )
+  if (error)
+    return (
+      <CardContent title="Game">
+        <p>Error: {error}</p>
+      </CardContent>
+    )
+
+  return (
+    <>
+      <CardContent title="Game">
+        {/* ปัจจุบันที่จั่วได้ */}
+        {currentCard && (
+          <div className="chat chat-end mb-4">
+            <div className="chat-bubble">
+              <strong>คุณจั่วได้:</strong> {currentCard.title}{' '}
+              {currentCard.actionData?.title} ({currentCard.score || 0})
+            </div>
+          </div>
+        )}
+
+        {/* กองที่เหลือ */}
+        <div className="mb-4">
+          <h2 className="font-bold">
+            Robinson Deck ({robinsonCard.length} cards left)
+          </h2>
+          <ul className="list-disc list-inside">
+            {robinsonCard.map((c, i) => (
+              <li key={i}>
+                {c.title} {c.actionData?.title} ({c.score || 0})
+              </li>
+            ))}
+          </ul>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+
+        {/* การ์ดที่ทิ้งแล้ว */}
+        <div>
+          <h2 className="font-bold">Trash ({trash.length})</h2>
+          <ul className="list-decimal list-inside">
+            {trash.map((c, i) => (
+              <li key={i}>
+                {c.title} {c.actionData?.title} ({c.score || 0})
+              </li>
+            ))}
+          </ul>
+        </div>
+      </CardContent>
+      <button
+        className="btn btn-outline absolute bottom-4 right-4"
+        onClick={handleDrawCard}
+      >
+        Draw Card {score()}
+      </button>
+    </>
+  )
 }
