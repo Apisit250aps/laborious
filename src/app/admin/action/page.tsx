@@ -5,11 +5,12 @@ import AlertDisplay from '@/components/share/callback/AlertDisplay'
 import CardContent from '@/components/share/layouts/CardContent'
 import DataTable from '@/components/share/table/DataTable'
 import { useActions } from '@/hooks/useActions'
-import { Action } from '@/models/actions'
+import { Action } from '@/types/action';
+
 import { ColumnDef } from '@tanstack/react-table'
 import Link from 'next/link'
 
-const columns: ColumnDef<Action>[] = [
+const columns: ColumnDef<Action, unknown>[] = [
   {
     accessorKey: 'title',
     header: 'Title'
