@@ -23,7 +23,7 @@ export const useCardStore = create<CardStore>((set, get) => ({
   pagination: {
     totalCount: 0,
     page: 1,
-    limit: 10,
+    limit: 1000,
     totalPages: 0
   },
 

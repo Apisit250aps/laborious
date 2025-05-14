@@ -131,6 +131,7 @@ export async function GET(
           { $match: filter },
           { $skip: skip },
           { $limit: limit },
+          { $sort: { _id: -1 } },
           {
             $lookup: {
               from: 'actions', // ชื่อ collection ของ action
