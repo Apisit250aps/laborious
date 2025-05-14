@@ -1,4 +1,5 @@
-import { Action } from '@/models/actions'
+
+import { Action } from '@/types/action';
 import { IPagination, IResponse, Query } from '@/types/services'
 import axios, { AxiosError } from 'axios'
 
