@@ -79,7 +79,7 @@ export async function PUT(
       )
     }
 
-    const { title, type, pick, danger, score, action, token, level } = data
+    const { title, type, pick, danger, score, action, token, level,quantity } = data
 
     // ✅ Handle action reference if it's a string (ObjectId)
     let actionId: ObjectId | undefined
@@ -99,6 +99,7 @@ export async function PUT(
     // เตรียม $set และ $unset แยกออกจากกัน
     const setData: Partial<Card> = {
       title,
+      quantity,
       type: type as CardType
     }
     const unsetData: Record<string, 1> = {}
