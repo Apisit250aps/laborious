@@ -5,21 +5,23 @@ import { shuffle } from 'lodash'
 type GameStore = {
   field: 1 | 2 | 3
   health: number
+  drawPoint: number
   robinsonCard: Card[]
   ageCard: Card[]
   onDeck: Card[]
   onHand: Card[]
   trash: Card[]
   score: () => number
-
   //
   setup: (card: Card[]) => boolean
   drawCard: () => Card | null
+  setDrawPoint: (point: number) => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
   field: 1,
   health: 20,
+  drawPoint: 0,
   score: () => get().onHand.reduce((sum, item) => sum + item.score! || 0, 0),
   robinsonCard: [],
   ageCard: [],
@@ -38,6 +40,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }))
     return true
   },
+  setDrawPoint: (point) =>
+    set((state) => ({ drawPoint: state.drawPoint + point })),
   drawCard: () => {
     const cards = get().robinsonCard
     if (cards.length === 0) return null

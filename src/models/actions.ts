@@ -5,6 +5,7 @@ export interface Action extends Document {
   _id?: ObjectId
   title: string
   codex: string
+  value: number
   description?: string
 }
 
