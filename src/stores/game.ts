@@ -2,41 +2,57 @@ import { Card } from '@/types/card'
 import { create } from 'zustand'
 import { shuffle } from 'lodash'
 
+const extractCard = (card: Card[]) =>
+  card.flatMap((card) =>
+    Array.from({ length: card.quantity }, () => ({ ...card }))
+  )
+
 type GameStore = {
   field: 1 | 2 | 3
   health: number
   drawPoint: number
   robinsonCard: Card[]
+  dangerCard: Card[]
+  knowledgeCard: Card[]
   ageCard: Card[]
   onDeck: Card[]
   onHand: Card[]
   trash: Card[]
   score: () => number
   //
-  setup: (card: Card[]) => boolean
+  setup: (card: Card[]) => Promise<boolean>
   drawCard: () => Card | null
   setDrawPoint: (point: number) => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  field: 1,
+  field: 1 as 1 | 2 | 3,
   health: 20,
   drawPoint: 0,
   score: () => get().onHand.reduce((sum, item) => sum + item.score! || 0, 0),
   robinsonCard: [],
+  dangerCard: [],
+  knowledgeCard: [],
   ageCard: [],
   onDeck: [],
   onHand: [],
   trash: [],
-  setup: (card) => {
-    const robinson = card.filter((card) => card.type == 'ROBINSON')
-    const age = card.filter((card) => card.type == 'AGE')
-    const robinsonEx = robinson.flatMap((card) =>
-      Array.from({ length: card.quantity }, () => ({ ...card }))
-    )
+  setup: async (card) => {
+    const robinson = card.filter(({ type }) => type == 'ROBINSON')
+    const age = card.filter(({ type }) => type == 'AGE')
+    const danger = card.filter(({ type }) => type == 'DANGER')
+    const knowledge = card.filter(({ type }) => type == 'KNOWLEDGE')
+    // extract
+    const robinsonExt = extractCard(robinson)
+    const ageExt = extractCard(age)
+    const dangerExt = extractCard(danger)
+    const knowledgeExt = extractCard(knowledge)
+    // set
     set(() => ({
       ageCard: age,
-      robinsonCard: shuffle([...robinsonEx, ...age])
+      robinsonCard: shuffle([...robinsonExt, ...ageExt]),
+      dangerCard: shuffle([...dangerExt]),
+      knowledgeCard: shuffle([...knowledgeExt])
     }))
     return true
   },
