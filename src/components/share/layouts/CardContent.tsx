@@ -8,7 +8,7 @@ export default function CardContent(props: CardContentProps) {
   return (
     <>
       <div className="card">
-        <div className="card-body h-full relative">
+        <div className="card-body">
           <div className="card-title flex justify-between items-center">
             <h2>{title}</h2>
             <div className="card-actions">{actions}</div>
