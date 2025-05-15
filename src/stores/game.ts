@@ -7,6 +7,11 @@ const extractCard = (card: Card[]) =>
     Array.from({ length: card.quantity }, () => ({ ...card }))
   )
 
+export type Danger = {
+  danger: Card
+  knowledge: Card
+}
+
 type GameStore = {
   field: 1 | 2 | 3
   health: number
@@ -21,7 +26,10 @@ type GameStore = {
   score: () => number
   //
   setup: (card: Card[]) => Promise<boolean>
+  loadSave: () => void
+  //
   drawCard: () => Card | null
+  adventureCard: () => Danger[]
   setDrawPoint: (point: number) => void
 }
 
@@ -37,6 +45,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   onDeck: [],
   onHand: [],
   trash: [],
+  loadSave: () => {
+    const save = localStorage.getItem('save') as string
+    const saveObj = JSON.parse(save)
+    set(() => ({ ...saveObj }))
+  },
   setup: async (card) => {
     const robinson = card.filter(({ type }) => type == 'ROBINSON')
     const age = card.filter(({ type }) => type == 'AGE')
@@ -67,5 +80,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
       onHand: [...state.onHand, firstCard]
     }))
     return firstCard
+  },
+  adventureCard: () => {
+    const dangerCards = get().dangerCard
+    const knowledgeCards = get().knowledgeCard
+
+    const pairs: Danger[] = []
+
+    for (let i = 0; i < 2; i++) {
+      if (dangerCards[i] && knowledgeCards[i]) {
+        pairs.push({
+          danger: dangerCards[i],
+          knowledge: knowledgeCards[i]
+        })
+      }
+    }
+    return pairs
   }
 }))

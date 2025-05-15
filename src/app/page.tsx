@@ -1,14 +1,13 @@
 'use client'
 
 import CardContent from '@/components/share/layouts/CardContent'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useGameStore } from '@/stores/game'
 import { Card } from '@/types/card'
 import GameLayout from '@/components/share/layouts/GameLayout'
 
 export default function Home() {
-  const { score, drawCard, setDrawPoint } = useGameStore()
-
+  const { score, drawCard, setDrawPoint,loadSave } = useGameStore()
   const handleDrawCard = () => {
     const card = drawCard()
     if (card) {
@@ -36,9 +35,7 @@ export default function Home() {
     <>
       <GameLayout>
         <CardContent title="Game">
-          <main className="min-h-96">
-            
-          </main>
+          <main className="min-h-96"></main>
         </CardContent>
         <button
           className="btn btn-outline absolute bottom-4 right-4"
