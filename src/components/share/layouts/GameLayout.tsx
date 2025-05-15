@@ -8,7 +8,7 @@ export default function GameLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { drawPoint, health, score, setup } = useGameStore()
+  const { drawPoint, health, score, setup, knowledgeCard, dangerCard } = useGameStore()
   const initialized = useRef(false)
   const [loading, setLoading] = useState(true)
   const { loadCards, cards } = useCardStore()
@@ -87,10 +87,16 @@ export default function GameLayout({
         <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
           {/* Sidebar content here */}
           <li>
-            <a>Sidebar Item 1</a>
+            <a>
+              <i className="ri-book-marked-line"></i>
+              Knowledge ({knowledgeCard.length})
+            </a>
           </li>
           <li>
-            <a>Sidebar Item 2</a>
+            <a>
+              <i className="ri-sword-line"></i>
+              Danger ({ dangerCard.length })
+            </a>
           </li>
         </ul>
       </div>
