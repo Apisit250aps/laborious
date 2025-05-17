@@ -18,7 +18,7 @@ export default function PlayButton() {
   const Play = async () => {
     addChat({
       role: 'system',
-      message: 'อัตราย',
+      message: 'อันตราย',
       send: new Date()
     })
     const adventure = adventureCard()
@@ -34,6 +34,11 @@ export default function PlayButton() {
       send: new Date()
     })
     setDanger(danger)
+    addChat({
+      role: 'system',
+      message: `จั๋วการ์ด ${danger.danger.pick} ใบ`,
+      send: new Date()
+    })
     closeModal('my_modal_1')
   }
 
@@ -47,7 +52,7 @@ export default function PlayButton() {
       </button>
       <dialog id="my_modal_1" className="modal">
         <div className="modal-box">
-          <h3 className="font-bold text-lg">Hello!</h3>
+          <h3 className="font-bold text-lg">อันตราย</h3>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             {dangers.map((danger, index) => (
               <DangerousCard

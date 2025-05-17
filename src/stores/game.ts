@@ -113,7 +113,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const [firstCard, ...remaining] = cards
     set((state) => ({
       robinsonCard: remaining,
-      onHand: [...state.onHand, firstCard]
+      onHand: [...state.onHand, firstCard],
+      drawPoint: state.drawPoint - 1
     }))
     return firstCard
   },
