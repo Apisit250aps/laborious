@@ -1,48 +1,20 @@
 'use client'
 
 import CardContent from '@/components/share/layouts/CardContent'
-import { useCallback, useEffect } from 'react'
-import { useGameStore } from '@/stores/game'
-import { Card } from '@/types/card'
 import GameLayout from '@/components/share/layouts/GameLayout'
+import DrawButton from '@/components/app/draw-button'
+import PlayButton from '@/components/app/play-button'
+import { useGameStore } from '@/stores/game'
 
 export default function Home() {
-  const { score, drawCard, setDrawPoint,loadSave } = useGameStore()
-  const handleDrawCard = () => {
-    const card = drawCard()
-    if (card) {
-      gameRule(card)
-    } else {
-      alert('No cards left to draw!')
-    }
-  }
-
-  const gameRule = useCallback(
-    (card: Card) => {
-      console.log(card.type)
-      if (card.type !== 'DANGER') {
-        setDrawPoint(card.score!)
-      }
-      if (['KNOWLEDGE', 'ROBINSON', 'AGE'].includes(card.type)) {
-        const action = card.actionData!
-        console.log(action)
-      }
-    },
-    [setDrawPoint]
-  )
-
+  const { onDraw } = useGameStore()
   return (
     <>
       <GameLayout>
         <CardContent title="Game">
           <main className="min-h-96"></main>
         </CardContent>
-        <button
-          className="btn btn-outline absolute bottom-4 right-4"
-          onClick={handleDrawCard}
-        >
-          Draw Card {score()}
-        </button>
+        {onDraw ? <DrawButton /> : <PlayButton />}
       </GameLayout>
     </>
   )

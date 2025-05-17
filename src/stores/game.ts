@@ -13,7 +13,7 @@ export type Danger = {
 }
 
 type GameStore = {
-  field: 1 | 2 | 3
+  field: 0 | 1 | 2
   health: number
   drawPoint: number
   robinsonCard: Card[]
@@ -23,6 +23,12 @@ type GameStore = {
   onDeck: Card[]
   onHand: Card[]
   trash: Card[]
+  //
+  onDraw: boolean
+  dangerSelected: Danger
+  dangerScore: number
+  //
+  setDanger: (danger: Danger) => void
   score: () => number
   //
   setup: (card: Card[]) => Promise<boolean>
@@ -34,17 +40,29 @@ type GameStore = {
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  field: 1 as 1 | 2 | 3,
-  health: 20,
-  drawPoint: 0,
-  score: () => get().onHand.reduce((sum, item) => sum + item.score! || 0, 0),
-  robinsonCard: [],
-  dangerCard: [],
-  knowledgeCard: [],
-  ageCard: [],
-  onDeck: [],
-  onHand: [],
+  field: 0 as 0 | 1 | 2, // field level
+  health: 20, // health
+  drawPoint: 0, // draw point
+  dangerSelected: {} as Danger, // danger selected
+  score: () => get().onHand.reduce((sum, item) => sum + item.score! || 0, 0), // score on hand
+  robinsonCard: [], // robinson card
+  dangerCard: [], // dangerous card
+  knowledgeCard: [], // knowledge card
+  ageCard: [], // age card
+  onDeck: [], // card on deck
+  onHand: [], // 
   trash: [],
+  onDraw: false,
+  dangerScore: 0,
+  setDanger: (danger) => {
+    const { field } = get()
+    set(() => ({
+      dangerSelected: danger,
+      dangerScore: danger.danger.danger![field],
+      drawPoint: danger.danger.pick,
+      onDraw: true
+    }))
+  },
   loadSave: () => {
     const save = localStorage.getItem('save') as string
     const saveObj = JSON.parse(save)
@@ -72,7 +90,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setDrawPoint: (point) =>
     set((state) => ({ drawPoint: state.drawPoint + point })),
   drawCard: () => {
+    const drawPoint = get().drawPoint
     const cards = get().robinsonCard
+
+    if (!drawPoint) return null
     if (cards.length === 0) return null
     const [firstCard, ...remaining] = cards
     set((state) => ({
