@@ -12,6 +12,12 @@ export type Danger = {
   knowledge: Card
 }
 
+export type ChatLogs = {
+  role: 'system' | 'player'
+  message: string
+  send: Date
+}
+
 type GameStore = {
   field: 0 | 1 | 2
   health: number
@@ -27,6 +33,9 @@ type GameStore = {
   onDraw: boolean
   dangerSelected: Danger
   dangerScore: number
+  //
+  chatLogs: ChatLogs[]
+  addChat: (logs: ChatLogs) => void
   //
   setDanger: (danger: Danger) => void
   score: () => number
@@ -50,10 +59,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
   knowledgeCard: [], // knowledge card
   ageCard: [], // age card
   onDeck: [], // card on deck
-  onHand: [], // 
+  onHand: [], //
   trash: [],
   onDraw: false,
   dangerScore: 0,
+  //
+  chatLogs: [],
+  addChat: (logs) => {
+    set((state) => ({ chatLogs: [...state.chatLogs, logs] }))
+  },
+  //
   setDanger: (danger) => {
     const { field } = get()
     set(() => ({
