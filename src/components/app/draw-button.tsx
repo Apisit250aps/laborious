@@ -14,7 +14,8 @@ export default function DrawButton() {
     setDrawPoint,
     setEndRound,
     setFight,
-    setWhiteFlag
+    setWhiteFlag,
+    save
   } = useGameStore()
   const handleDrawCard = async () => {
     if (drawPoint <= 0 && dangerScore > 0) {
@@ -62,12 +63,16 @@ export default function DrawButton() {
     } else {
       alert('No cards left to draw!')
     }
+
+    save()
   }
 
   const fight = () => {
     const danger = dangerSelected
     setFight(danger)
+    
     setEndRound()
+    save()
   }
 
   const whiteFlag = async () => {
@@ -86,6 +91,7 @@ export default function DrawButton() {
         setWhiteFlag(dangerSelected)
         setHealth(-danger.danger![field])
         setEndRound()
+        save()
       }
     })
   }

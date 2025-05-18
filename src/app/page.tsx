@@ -9,6 +9,7 @@ import HandButton from '@/components/app/hand-button'
 
 export default function Home() {
   const { onDraw, chatLogs } = useGameStore()
+ 
   return (
     <>
       <GameLayout>

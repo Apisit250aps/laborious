@@ -11,14 +11,12 @@ export default function HandButton() {
           <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
             Most played songs this week
           </li>
-
           {onHand.map((card, index) => (
             <li className="list-row" key={index}>
               <div className="text-4xl font-thin opacity-30 tabular-nums">
                 {card.score}
               </div>
               <div>
-               
               </div>
               <div className="list-col-grow">
                 <div>{card.title}</div>

@@ -13,7 +13,7 @@ const closeModal = (id: string) => {
 }
 
 export default function PlayButton() {
-  const { adventureCard, setDanger, setChat } = useGameStore()
+  const { adventureCard, setDanger, setChat, save } = useGameStore()
   const [dangers, setDangers] = useState<Danger[]>([])
   const Play = async () => {
     setChat({
@@ -25,6 +25,7 @@ export default function PlayButton() {
 
     openModal('my_modal_1')
     setDangers(adventure)
+    save()
   }
 
   const selectCard = (danger: Danger) => {
@@ -39,6 +40,7 @@ export default function PlayButton() {
       message: `จั๋วการ์ด ${danger.danger.pick} ใบ`,
       send: new Date()
     })
+    save()
     closeModal('my_modal_1')
   }
 

@@ -12,10 +12,13 @@ export default function GameLayout({
     drawPoint,
     health,
     dangerScore,
-    setup,
     knowledgeCard,
     dangerCard,
-    robinsonCard
+    robinsonCard,
+
+    setup,
+    loadSave,
+    save
   } = useGameStore()
   const initialized = useRef(false)
   const [loading, setLoading] = useState(true)
@@ -26,19 +29,29 @@ export default function GameLayout({
     if (initialized.current) return
     setLoading(true)
     try {
-      await Promise.all([loadActions(), loadCards()])
-      await setup(cards)
+      await loadSave()
+      const currentGameStart = useGameStore.getState().onGameStart
+      console.log(currentGameStart)
+      if (currentGameStart) {
+        return
+      } else {
+        await Promise.all([loadActions(), loadCards()])
+        await setup(cards)
+      }
       initialized.current = true
     } catch (error) {
       console.error(error)
     } finally {
       setLoading(false)
+      save()
     }
-  }, [cards, loadActions, loadCards, setup])
+  }, [cards, loadActions, loadCards, loadSave, save, setup])
+
   //
   useEffect(() => {
     onInit()
   }, [onInit])
+
   //
   return (
     <div className="drawer lg:drawer-open">

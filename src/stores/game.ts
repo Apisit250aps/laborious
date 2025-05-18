@@ -29,6 +29,7 @@ type GameStore = {
   field: 0 | 1 | 2
   health: number
   drawPoint: number
+  onGameStart: boolean
 
   // Card groups
   robinsonCard: Card[]
@@ -59,7 +60,8 @@ type GameStore = {
 
   // --- Game logic ---
   setup: (cards: Card[]) => Promise<boolean>
-  loadSave: () => void
+  loadSave: () => Promise<void>
+  save: () => void
   drawCard: () => Card | null
   adventureCard: () => Danger[]
   score: () => number
@@ -69,11 +71,12 @@ type GameStore = {
 export const useGameStore = create<GameStore>((set, get) => ({
   // --- State Initialization ---
   field: 0,
-  health: 20,
+  health: 200,
   drawPoint: 0,
   dangerSelected: {} as Danger,
   dangerScore: 0,
   onDraw: false,
+  onGameStart: false,
 
   // Cards
   robinsonCard: [],
@@ -112,30 +115,71 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   score: () => get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
   setFight: (danger) => {
+    const { onHand } = get()
+    const handCard = onHand.map((card) => {
+      const { isActive, ...rest } = card
+      console.log(isActive)
+      return rest
+    })
     set((state) => ({
-      onDeck: [...state.onDeck, danger.knowledge],
-      trash: [...state.trash, danger.danger]
+      onDeck: [...state.onDeck, danger.knowledge, ...handCard],
+      trash: [...state.trash, danger.danger],
+      onHand: []
     }))
   },
+
   setWhiteFlag: (danger) => {
+    const { onHand } = get()
+    const handCard = onHand.map((card) => {
+      const { isActive, ...rest } = card
+      console.log(isActive)
+      return rest
+    })
     set((state) => ({
-      onDeck: [...state.onDeck, danger.knowledge, danger.danger]
+      onDeck: [...state.onDeck, danger.knowledge, danger.danger, ...handCard],
+      onHand: []
     }))
   },
   // --- Card Mechanics ---
   drawCard: () => {
     const state = get()
-    if (state.drawPoint <= 0 || state.robinsonCard.length === 0) return null
 
-    const [card, ...remaining] = state.robinsonCard
+    // ถ้า drawPoint หมด ก็ไม่สามารถจั่วได้
+    if (state.drawPoint <= 0) return null
+
+    // ถ้า robinsonCard หมด → เอาจาก onDeck มาเติม
+    if (state.robinsonCard.length === 0) {
+      const newDeck = [...state.onDeck]
+      const robinsonDeck = newDeck.filter((c) =>
+        ['ROBINSON', 'AGE', 'KNOWLEDGE'].includes(c.type)
+      )
+
+      const remainingDeck = newDeck.filter(
+        (c) => !['ROBINSON', 'AGE', 'KNOWLEDGE'].includes(c.type)
+      )
+
+      const reshuffled = shuffle(robinsonDeck)
+
+      set(() => ({
+        robinsonCard: reshuffled,
+        onDeck: remainingDeck
+      }))
+    }
+
+    // หลังจากเติมแล้ว ลองจั่วอีกที (ใช้ get() ใหม่เพื่อดึงค่าอัปเดต)
+    const { robinsonCard, drawPoint, onHand } = get()
+    if (robinsonCard.length === 0) return null
+
+    const [card, ...remaining] = robinsonCard
+
     set(() => ({
       robinsonCard: remaining,
-      onHand: [...state.onHand, { ...card, isActive: true }],
-      drawPoint: state.drawPoint - 1
+      onHand: [...onHand, { ...card, isActive: true }],
+      drawPoint: drawPoint - 1
     }))
+
     return card
   },
-
   adventureCard: () => {
     const dangerCards = [...get().dangerCard]
     const knowledgeCards = [...get().knowledgeCard]
@@ -159,7 +203,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setup: async (cards) => {
     const byType = (type: string) => cards.filter((card) => card.type === type)
-
     const robinsonExt = extractCard(byType('ROBINSON'))
     const ageExt = extractCard(byType('AGE'))
     const dangerExt = extractCard(byType('DANGER'))
@@ -169,13 +212,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
       ageCard: byType('AGE'),
       robinsonCard: shuffle([...robinsonExt, ...ageExt]),
       dangerCard: shuffle(dangerExt),
-      knowledgeCard: shuffle(knowledgeExt)
+      knowledgeCard: shuffle(knowledgeExt),
+      onGameStart: true
     }))
-
     return true
   },
 
-  loadSave: () => {
+  loadSave: async () => {
     const save = localStorage.getItem('save')
     if (!save) return
     try {
@@ -184,6 +227,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } catch (err) {
       console.error('Failed to load save:', err)
     }
+  },
+  save: () => {
+    const store = get()
+    const save = JSON.stringify(store)
+    localStorage.setItem('save', save)
   },
   setEndRound: () =>
     set(() => ({
