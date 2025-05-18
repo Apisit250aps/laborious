@@ -32,23 +32,7 @@ export default function Home() {
             <>
               <div className="space-x-3">
                 <HandButton />
-
-                {dangerScore > 0 ? (
-                  <>
-                    <button className="btn">ยอมแพั</button>
-                    {drawPoint > 0 ? (
-                      <>
-                        <DrawButton />
-                      </>
-                    ) : (
-                      <></>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <button className="btn">ต่อสู้</button>
-                  </>
-                )}
+                <DrawButton />
               </div>
             </>
           ) : (

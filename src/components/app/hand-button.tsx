@@ -37,7 +37,7 @@ export default function HandButton() {
         className="btn btn-outline btn-warning"
         onClick={() => openModal('on-hand')}
       >
-        On Hand
+        การ์ดบนมือ
       </button>
     </>
   )

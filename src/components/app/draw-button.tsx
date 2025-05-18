@@ -60,8 +60,15 @@ export default function DrawButton() {
   }
 
   return (
-    <button className="btn btn-outline" onClick={handleDrawCard}>
-      Draw Card
-    </button>
+    <>
+      {dangerScore > 0 ? (
+        <button className="btn btn-error">ยอมแพ้</button>
+      ) : (
+        <button className="btn btn-primary">ต่อสู้</button>
+      )}
+      <button className="btn btn-outline" onClick={handleDrawCard}>
+        จั่วการ์ด
+      </button>
+    </>
   )
 }
