@@ -5,9 +5,12 @@ export default function DrawButton() {
   const {
     drawCard,
     drawPoint,
+    dangerSelected,
+    field,
     addChat,
     setDangerScore,
     dangerScore,
+    setOnDraw,
     setHealth,
     setDrawPoint
   } = useGameStore()
@@ -59,10 +62,18 @@ export default function DrawButton() {
     }
   }
 
+  const whiteFlag = () => {
+    const danger = dangerSelected.danger
+    setHealth(-danger.danger![field])
+    setOnDraw(false)
+  }
+
   return (
     <>
       {dangerScore > 0 ? (
-        <button className="btn btn-error">ยอมแพ้</button>
+        <button className="btn btn-error" onClick={whiteFlag}>
+          ยอมแพ้
+        </button>
       ) : (
         <button className="btn btn-primary">ต่อสู้</button>
       )}

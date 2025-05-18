@@ -8,7 +8,7 @@ import { useGameStore } from '@/stores/game'
 import HandButton from '@/components/app/hand-button'
 
 export default function Home() {
-  const { onDraw, chatLogs, dangerScore, drawPoint } = useGameStore()
+  const { onDraw, chatLogs } = useGameStore()
   return (
     <>
       <GameLayout>

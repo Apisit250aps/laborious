@@ -1,12 +1,14 @@
-import { Card } from '@/types/card'
 import { create } from 'zustand'
 import { shuffle } from 'lodash'
+import { Card } from '@/types/card'
 
-const extractCard = (card: Card[]) =>
-  card.flatMap((card) =>
+/** Utility: สร้างสำเนาการ์ดตาม quantity */
+const extractCard = (cards: Card[]) =>
+  cards.flatMap(card =>
     Array.from({ length: card.quantity }, () => ({ ...card }))
   )
 
+/** ประเภทการ์ดผจญภัย */
 export type Danger = {
   danger: Card
   knowledge: Card
@@ -19,9 +21,12 @@ export type ChatLogs = {
 }
 
 type GameStore = {
+  // Core status
   field: 0 | 1 | 2
   health: number
   drawPoint: number
+
+  // Card groups
   robinsonCard: Card[]
   dangerCard: Card[]
   knowledgeCard: Card[]
@@ -29,122 +34,141 @@ type GameStore = {
   onDeck: Card[]
   onHand: Card[]
   trash: Card[]
-  //
+
+  // Game states
   onDraw: boolean
   dangerSelected: Danger
   dangerScore: number
-  //
-  chatLogs: ChatLogs[]
-  addChat: (logs: ChatLogs) => void
-  //
-  setDanger: (danger: Danger) => void
-  setDangerScore: (score: number) => void
-  score: () => number
 
-  //
-  setup: (card: Card[]) => Promise<boolean>
-  loadSave: () => void
-  //
-  drawCard: () => Card | null
-  adventureCard: () => Danger[]
+  // Chat
+  chatLogs: ChatLogs[]
+
+  // --- Actions ---
   setDrawPoint: (point: number) => void
   setHealth: (point: number) => void
+  setOnDraw: (state: boolean) => void
+  setDanger: (danger: Danger) => void
+  setDangerScore: (score: number) => void
+  addChat: (logs: ChatLogs) => void
+
+  // --- Game logic ---
+  setup: (cards: Card[]) => Promise<boolean>
+  loadSave: () => void
+  drawCard: () => Card | null
+  adventureCard: () => Danger[]
+  score: () => number
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
-  field: 0 as 0 | 1 | 2, // field level
-  health: 20, // health
-  drawPoint: 0, // draw point
-  dangerSelected: {} as Danger, // danger selected
-  score: () => get().onHand.reduce((sum, item) => sum + item.score! || 0, 0), // score on hand
-  robinsonCard: [], // robinson card
-  dangerCard: [], // dangerous card
-  knowledgeCard: [], // knowledge card
-  ageCard: [], // age card
-  onDeck: [], // card on deck
-  onHand: [], //
-  trash: [],
-  onDraw: false,
+  // --- State Initialization ---
+  field: 0,
+  health: 20,
+  drawPoint: 0,
+  dangerSelected: {} as Danger,
   dangerScore: 0,
-  //
+  onDraw: false,
+
+  // Cards
+  robinsonCard: [],
+  dangerCard: [],
+  knowledgeCard: [],
+  ageCard: [],
+  onDeck: [],
+  onHand: [],
+  trash: [],
+
+  // Chat
   chatLogs: [],
-  addChat: (logs) => {
-    set((state) => ({ chatLogs: [...state.chatLogs, logs] }))
-  },
-  //
+
+  // --- Core Functions ---
+  setDrawPoint: (point) =>
+    set((state) => ({ drawPoint: state.drawPoint + point })),
+
+  setHealth: (point) =>
+    set((state) => ({ health: state.health + point })),
+
+  setOnDraw: (onDraw) => set(() => ({ onDraw })),
+
+  setDangerScore: (score) =>
+    set((state) => ({ dangerScore: state.dangerScore + score })),
+
   setDanger: (danger) => {
     const { field } = get()
     set(() => ({
       dangerSelected: danger,
-      dangerScore: danger.danger.danger![field],
+      dangerScore: danger.danger.danger?.[field] ?? 0,
       drawPoint: danger.danger.pick,
       onDraw: true
     }))
   },
-  setDangerScore: (score) =>
-    set((state) => ({ dangerScore: state.dangerScore + score })),
-  loadSave: () => {
-    const save = localStorage.getItem('save') as string
-    const saveObj = JSON.parse(save)
-    set(() => ({ ...saveObj }))
-  },
-  setHealth: (point) => set((state) => ({ health: state.health + point })),
-  setup: async (card) => {
-    const robinson = card.filter(({ type }) => type == 'ROBINSON')
-    const age = card.filter(({ type }) => type == 'AGE')
-    const danger = card.filter(({ type }) => type == 'DANGER')
-    const knowledge = card.filter(({ type }) => type == 'KNOWLEDGE')
-    // extract
-    const robinsonExt = extractCard(robinson)
-    const ageExt = extractCard(age)
-    const dangerExt = extractCard(danger)
-    const knowledgeExt = extractCard(knowledge)
-    // set
-    set(() => ({
-      ageCard: age,
-      robinsonCard: shuffle([...robinsonExt, ...ageExt]),
-      dangerCard: shuffle([...dangerExt]),
-      knowledgeCard: shuffle([...knowledgeExt])
-    }))
-    return true
-  },
-  setDrawPoint: (point) =>
-    set((state) => ({ drawPoint: state.drawPoint + point })),
-  drawCard: () => {
-    const drawPoint = get().drawPoint
-    const cards = get().robinsonCard
 
-    if (!drawPoint) return null
-    if (cards.length === 0) return null
-    const [firstCard, ...remaining] = cards
-    set((state) => ({
+  addChat: (log) =>
+    set((state) => ({ chatLogs: [...state.chatLogs, log] })),
+
+  score: () =>
+    get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
+
+  // --- Card Mechanics ---
+  drawCard: () => {
+    const state = get()
+    if (state.drawPoint <= 0 || state.robinsonCard.length === 0) return null
+
+    const [card, ...remaining] = state.robinsonCard
+    set(() => ({
       robinsonCard: remaining,
-      onHand: [...state.onHand, firstCard],
+      onHand: [...state.onHand, card],
       drawPoint: state.drawPoint - 1
     }))
-    return firstCard
+    return card
   },
-  adventureCard: () => {
-    const dangerCards = get().dangerCard
-    const knowledgeCards = get().knowledgeCard
 
+  adventureCard: () => {
+    const dangerCards = [...get().dangerCard]
+    const knowledgeCards = [...get().knowledgeCard]
     const pairs: Danger[] = []
 
     for (let i = 0; i < 2; i++) {
-      if (dangerCards.length > 0 && knowledgeCards.length > 0) {
-        const danger = dangerCards.splice(0, 1)[0]
-        const knowledge = knowledgeCards.splice(0, 1)[0]
+      if (dangerCards.length === 0 || knowledgeCards.length === 0) break
 
-        pairs.push({ danger, knowledge })
-      }
+      const danger = dangerCards.splice(0, 1)[0]
+      const knowledge = knowledgeCards.splice(0, 1)[0]
+      pairs.push({ danger, knowledge })
     }
 
-    // อัปเดต state หลังจากลบการ์ดออกจาก array
     set({
       dangerCard: dangerCards,
       knowledgeCard: knowledgeCards
     })
 
     return pairs
+  },
+
+  setup: async (cards) => {
+    const byType = (type: string) => cards.filter(card => card.type === type)
+
+    const robinsonExt = extractCard(byType('ROBINSON'))
+    const ageExt = extractCard(byType('AGE'))
+    const dangerExt = extractCard(byType('DANGER'))
+    const knowledgeExt = extractCard(byType('KNOWLEDGE'))
+
+    set(() => ({
+      ageCard: byType('AGE'),
+      robinsonCard: shuffle([...robinsonExt, ...ageExt]),
+      dangerCard: shuffle(dangerExt),
+      knowledgeCard: shuffle(knowledgeExt)
+    }))
+
+    return true
+  },
+
+  loadSave: () => {
+    const save = localStorage.getItem('save')
+    if (!save) return
+    try {
+      const saveObj = JSON.parse(save)
+      set(() => ({ ...saveObj }))
+    } catch (err) {
+      console.error('Failed to load save:', err)
+    }
   }
 }))
