@@ -38,7 +38,9 @@ type GameStore = {
   addChat: (logs: ChatLogs) => void
   //
   setDanger: (danger: Danger) => void
+  setDangerScore: (score: number) => void
   score: () => number
+
   //
   setup: (card: Card[]) => Promise<boolean>
   loadSave: () => void
@@ -78,6 +80,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
       onDraw: true
     }))
   },
+  setDangerScore: (score) =>
+    set((state) => ({ dangerScore: state.dangerScore + score })),
   loadSave: () => {
     const save = localStorage.getItem('save') as string
     const saveObj = JSON.parse(save)

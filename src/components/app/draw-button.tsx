@@ -1,39 +1,55 @@
 import { useGameStore } from '@/stores/game'
-import { Card } from '@/types/card'
-import { useCallback } from 'react'
+import Swal from 'sweetalert2'
 
 export default function DrawButton() {
-  const { score, drawCard, drawPoint, addChat } = useGameStore()
-  const handleDrawCard = () => {
-    if (drawPoint <= 0) return
+  const { drawCard, drawPoint, addChat, setDangerScore, dangerScore } =
+    useGameStore()
+  const handleDrawCard = async () => {
+    if (drawPoint <= 0 && dangerScore > 1) {
+      await Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          addChat({
+            role: 'player',
+            message: `บาดเจ็บ`,
+            send: new Date()
+          })
+          Swal.fire({
+            title: 'Deleted!',
+            text: 'Your file has been deleted.',
+            icon: 'success'
+          })
+        }
+      })
+      return
+    }
 
     const card = drawCard()
     if (card) {
+      setDangerScore(-card.score!)
       addChat({
         role: 'player',
         message: `จั่วได้ ${card.title}`,
         send: new Date()
       })
-      gameRule(card)
     } else {
       alert('No cards left to draw!')
     }
   }
-
-  const gameRule = useCallback((card: Card) => {
-    console.log(card.type)
-    if (['KNOWLEDGE', 'ROBINSON', 'AGE'].includes(card.type)) {
-      const action = card.actionData!
-      console.log(action)
-    }
-  }, [])
 
   return (
     <button
       className="btn btn-outline absolute bottom-4 right-4"
       onClick={handleDrawCard}
     >
-      Draw Card {score()}
+      Draw Card
     </button>
   )
 }
