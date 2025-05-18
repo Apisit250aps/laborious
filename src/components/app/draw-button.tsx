@@ -2,10 +2,17 @@ import { useGameStore } from '@/stores/game'
 import Swal from 'sweetalert2'
 
 export default function DrawButton() {
-  const { drawCard, drawPoint, addChat, setDangerScore, dangerScore } =
-    useGameStore()
+  const {
+    drawCard,
+    drawPoint,
+    addChat,
+    setDangerScore,
+    dangerScore,
+    setHealth,
+    setDrawPoint
+  } = useGameStore()
   const handleDrawCard = async () => {
-    if (drawPoint <= 0 && dangerScore > 1) {
+    if (drawPoint <= 0 && dangerScore > 0) {
       await Swal.fire({
         title: 'Are you sure?',
         text: "You won't be able to revert this!",
@@ -21,11 +28,19 @@ export default function DrawButton() {
             message: `บาดเจ็บ`,
             send: new Date()
           })
-          Swal.fire({
-            title: 'Deleted!',
-            text: 'Your file has been deleted.',
-            icon: 'success'
-          })
+          setHealth(-1)
+          setDrawPoint(1)
+          const card = drawCard()
+          if (card) {
+            setDangerScore(-card.score!)
+            addChat({
+              role: 'player',
+              message: `จั่วได้ ${card.title}`,
+              send: new Date()
+            })
+          } else {
+            alert('No cards left to draw!')
+          }
         }
       })
       return
@@ -45,10 +60,7 @@ export default function DrawButton() {
   }
 
   return (
-    <button
-      className="btn btn-outline absolute bottom-4 right-4"
-      onClick={handleDrawCard}
-    >
+    <button className="btn btn-outline" onClick={handleDrawCard}>
       Draw Card
     </button>
   )

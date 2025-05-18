@@ -48,6 +48,7 @@ type GameStore = {
   drawCard: () => Card | null
   adventureCard: () => Danger[]
   setDrawPoint: (point: number) => void
+  setHealth: (point: number) => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -87,6 +88,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const saveObj = JSON.parse(save)
     set(() => ({ ...saveObj }))
   },
+  setHealth: (point) => set((state) => ({ health: state.health + point })),
   setup: async (card) => {
     const robinson = card.filter(({ type }) => type == 'ROBINSON')
     const age = card.filter(({ type }) => type == 'AGE')
@@ -129,13 +131,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const pairs: Danger[] = []
 
     for (let i = 0; i < 2; i++) {
-      if (dangerCards[i] && knowledgeCards[i]) {
-        pairs.push({
-          danger: dangerCards[i],
-          knowledge: knowledgeCards[i]
-        })
+      if (dangerCards.length > 0 && knowledgeCards.length > 0) {
+        const danger = dangerCards.splice(0, 1)[0]
+        const knowledge = knowledgeCards.splice(0, 1)[0]
+
+        pairs.push({ danger, knowledge })
       }
     }
+
+    // อัปเดต state หลังจากลบการ์ดออกจาก array
+    set({
+      dangerCard: dangerCards,
+      knowledgeCard: knowledgeCards
+    })
+
     return pairs
   }
 }))

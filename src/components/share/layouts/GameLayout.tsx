@@ -8,8 +8,15 @@ export default function GameLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { drawPoint, health, dangerScore, setup, knowledgeCard, dangerCard } =
-    useGameStore()
+  const {
+    drawPoint,
+    health,
+    dangerScore,
+    setup,
+    knowledgeCard,
+    dangerCard,
+    robinsonCard
+  } = useGameStore()
   const initialized = useRef(false)
   const [loading, setLoading] = useState(true)
   const { loadCards, cards } = useCardStore()
@@ -97,6 +104,12 @@ export default function GameLayout({
             <a>
               <i className="ri-sword-line"></i>
               Danger ({dangerCard.length})
+            </a>
+          </li>
+          <li>
+            <a>
+              <i className="ri-meteor-line"></i>
+              Robinson ({robinsonCard.length})
             </a>
           </li>
         </ul>

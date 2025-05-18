@@ -5,14 +5,15 @@ import GameLayout from '@/components/share/layouts/GameLayout'
 import DrawButton from '@/components/app/draw-button'
 import PlayButton from '@/components/app/play-button'
 import { useGameStore } from '@/stores/game'
+import HandButton from '@/components/app/hand-button'
 
 export default function Home() {
-  const { onDraw, chatLogs } = useGameStore()
+  const { onDraw, chatLogs, dangerScore, drawPoint } = useGameStore()
   return (
     <>
       <GameLayout>
         <CardContent title="Game">
-          <main className="min-h-96">
+          <main className="max-h-100 min-h-100 overflow-y-auto">
             {chatLogs.map((chat, index) => (
               <div
                 key={index}
@@ -26,7 +27,34 @@ export default function Home() {
             ))}
           </main>
         </CardContent>
-        {onDraw ? <DrawButton /> : <PlayButton />}
+        <div className="px-3 flex justify-end">
+          {onDraw ? (
+            <>
+              <div className="space-x-3">
+                <HandButton />
+
+                {dangerScore > 0 ? (
+                  <>
+                    <button className="btn">ยอมแพั</button>
+                    {drawPoint > 0 ? (
+                      <>
+                        <DrawButton />
+                      </>
+                    ) : (
+                      <></>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <button className="btn">ต่อสู้</button>
+                  </>
+                )}
+              </div>
+            </>
+          ) : (
+            <PlayButton />
+          )}
+        </div>
       </GameLayout>
     </>
   )
