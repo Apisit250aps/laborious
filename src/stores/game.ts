@@ -4,7 +4,7 @@ import { Card } from '@/types/card'
 
 /** Utility: สร้างสำเนาการ์ดตาม quantity */
 const extractCard = (cards: Card[]) =>
-  cards.flatMap(card =>
+  cards.flatMap((card) =>
     Array.from({ length: card.quantity }, () => ({ ...card }))
   )
 
@@ -12,6 +12,10 @@ const extractCard = (cards: Card[]) =>
 export type Danger = {
   danger: Card
   knowledge: Card
+}
+
+export interface HandCard extends Card {
+  isActive: boolean
 }
 
 export type ChatLogs = {
@@ -32,7 +36,7 @@ type GameStore = {
   knowledgeCard: Card[]
   ageCard: Card[]
   onDeck: Card[]
-  onHand: Card[]
+  onHand: HandCard[]
   trash: Card[]
 
   // Game states
@@ -49,7 +53,9 @@ type GameStore = {
   setOnDraw: (state: boolean) => void
   setDanger: (danger: Danger) => void
   setDangerScore: (score: number) => void
-  addChat: (logs: ChatLogs) => void
+  setChat: (logs: ChatLogs) => void
+  setFight: (danger: Danger) => void
+  setWhiteFlag: (danger: Danger) => void
 
   // --- Game logic ---
   setup: (cards: Card[]) => Promise<boolean>
@@ -57,6 +63,7 @@ type GameStore = {
   drawCard: () => Card | null
   adventureCard: () => Danger[]
   score: () => number
+  setEndRound: () => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -84,8 +91,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setDrawPoint: (point) =>
     set((state) => ({ drawPoint: state.drawPoint + point })),
 
-  setHealth: (point) =>
-    set((state) => ({ health: state.health + point })),
+  setHealth: (point) => set((state) => ({ health: state.health + point })),
 
   setOnDraw: (onDraw) => set(() => ({ onDraw })),
 
@@ -102,12 +108,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }))
   },
 
-  addChat: (log) =>
-    set((state) => ({ chatLogs: [...state.chatLogs, log] })),
+  setChat: (log) => set((state) => ({ chatLogs: [...state.chatLogs, log] })),
 
-  score: () =>
-    get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
-
+  score: () => get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
+  setFight: (danger) => {
+    set((state) => ({
+      onDeck: [...state.onDeck, danger.knowledge],
+      trash: [...state.trash, danger.danger]
+    }))
+  },
+  setWhiteFlag: (danger) => {
+    set((state) => ({
+      onDeck: [...state.onDeck, danger.knowledge, danger.danger]
+    }))
+  },
   // --- Card Mechanics ---
   drawCard: () => {
     const state = get()
@@ -116,7 +130,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const [card, ...remaining] = state.robinsonCard
     set(() => ({
       robinsonCard: remaining,
-      onHand: [...state.onHand, card],
+      onHand: [...state.onHand, { ...card, isActive: true }],
       drawPoint: state.drawPoint - 1
     }))
     return card
@@ -144,7 +158,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   setup: async (cards) => {
-    const byType = (type: string) => cards.filter(card => card.type === type)
+    const byType = (type: string) => cards.filter((card) => card.type === type)
 
     const robinsonExt = extractCard(byType('ROBINSON'))
     const ageExt = extractCard(byType('AGE'))
@@ -170,5 +184,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     } catch (err) {
       console.error('Failed to load save:', err)
     }
-  }
+  },
+  setEndRound: () =>
+    set(() => ({
+      onDraw: false,
+      drawPoint: 0,
+      dangerScore: 0,
+      dangerSelected: {} as Danger
+    }))
 }))

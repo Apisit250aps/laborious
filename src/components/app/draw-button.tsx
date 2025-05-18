@@ -3,30 +3,32 @@ import Swal from 'sweetalert2'
 
 export default function DrawButton() {
   const {
-    drawCard,
     drawPoint,
     dangerSelected,
     field,
-    addChat,
-    setDangerScore,
     dangerScore,
-    setOnDraw,
+    drawCard,
+    setChat,
+    setDangerScore,
     setHealth,
-    setDrawPoint
+    setDrawPoint,
+    setEndRound,
+    setFight,
+    setWhiteFlag
   } = useGameStore()
   const handleDrawCard = async () => {
     if (drawPoint <= 0 && dangerScore > 0) {
       await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
+        title: 'คุณแน่ใจไหม?',
+        text: 'คุณจะยอมเสียเลือด 1 แต้ม เพื่อจั่วการ์ด',
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#3085d6',
         cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+        confirmButtonText: 'ยินดี'
       }).then((result) => {
         if (result.isConfirmed) {
-          addChat({
+          setChat({
             role: 'player',
             message: `บาดเจ็บ`,
             send: new Date()
@@ -36,7 +38,7 @@ export default function DrawButton() {
           const card = drawCard()
           if (card) {
             setDangerScore(-card.score!)
-            addChat({
+            setChat({
               role: 'player',
               message: `จั่วได้ ${card.title}`,
               send: new Date()
@@ -52,7 +54,7 @@ export default function DrawButton() {
     const card = drawCard()
     if (card) {
       setDangerScore(-card.score!)
-      addChat({
+      setChat({
         role: 'player',
         message: `จั่วได้ ${card.title}`,
         send: new Date()
@@ -62,10 +64,30 @@ export default function DrawButton() {
     }
   }
 
-  const whiteFlag = () => {
+  const fight = () => {
+    const danger = dangerSelected
+    setFight(danger)
+    setEndRound()
+  }
+
+  const whiteFlag = async () => {
     const danger = dangerSelected.danger
-    setHealth(-danger.danger![field])
-    setOnDraw(false)
+    await Swal.fire({
+      title: 'คุณแน่ใจใช่ไหม',
+      text: `คุณจะยอมเสียเลือด ${danger.danger![field]} หน่วยเพื่อยอมแพ้`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ขอยอมแพ้',
+      cancelButtonText: 'สู้ต่อไป'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setWhiteFlag(dangerSelected)
+        setHealth(-danger.danger![field])
+        setEndRound()
+      }
+    })
   }
 
   return (
@@ -74,9 +96,11 @@ export default function DrawButton() {
         <button className="btn btn-error" onClick={whiteFlag}>
           ยอมแพ้
         </button>
-      ) : (
-        <button className="btn btn-primary">ต่อสู้</button>
-      )}
+      ) : drawPoint <= 0 ? (
+        <button className="btn btn-primary" onClick={fight}>
+          ต่อสู้
+        </button>
+      ) : null}
       <button className="btn btn-outline" onClick={handleDrawCard}>
         จั่วการ์ด
       </button>

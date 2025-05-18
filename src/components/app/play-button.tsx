@@ -13,10 +13,10 @@ const closeModal = (id: string) => {
 }
 
 export default function PlayButton() {
-  const { adventureCard, setDanger, addChat } = useGameStore()
+  const { adventureCard, setDanger, setChat } = useGameStore()
   const [dangers, setDangers] = useState<Danger[]>([])
   const Play = async () => {
-    addChat({
+    setChat({
       role: 'system',
       message: 'อันตราย',
       send: new Date()
@@ -28,13 +28,13 @@ export default function PlayButton() {
   }
 
   const selectCard = (danger: Danger) => {
-    addChat({
+    setChat({
       role: 'player',
       message: `เผชิญ ${danger.danger.title}`,
       send: new Date()
     })
     setDanger(danger)
-    addChat({
+    setChat({
       role: 'system',
       message: `จั๋วการ์ด ${danger.danger.pick} ใบ`,
       send: new Date()
