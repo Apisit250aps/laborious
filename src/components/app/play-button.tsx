@@ -34,7 +34,7 @@ export default function PlayButton() {
       message: `เผชิญ ${danger.danger.title}`,
       send: new Date()
     })
-    setDanger(danger)
+    setDanger(danger, dangers)
     setChat({
       role: 'system',
       message: `จั๋วการ์ด ${danger.danger.pick} ใบ`,

@@ -10,6 +10,7 @@ const extractCard = (cards: Card[]) =>
 
 /** ประเภทการ์ดผจญภัย */
 export type Danger = {
+  id: number
   danger: Card
   knowledge: Card
 }
@@ -52,7 +53,7 @@ type GameStore = {
   setDrawPoint: (point: number) => void
   setHealth: (point: number) => void
   setOnDraw: (state: boolean) => void
-  setDanger: (danger: Danger) => void
+  setDanger: (danger: Danger, allDangers: Danger[]) => void
   setDangerScore: (score: number) => void
   setChat: (logs: ChatLogs) => void
   setFight: (danger: Danger) => void
@@ -70,7 +71,7 @@ type GameStore = {
 
 export const useGameStore = create<GameStore>((set, get) => ({
   // --- State Initialization ---
-  field: 0,
+  field: 0 as 0 | 1 | 2,
   health: 200,
   drawPoint: 0,
   dangerSelected: {} as Danger,
@@ -101,16 +102,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setDangerScore: (score) =>
     set((state) => ({ dangerScore: state.dangerScore + score })),
 
-  setDanger: (danger) => {
-    const { field } = get()
+  setDanger: (danger, allDangers) => {
+    const { field, onDeck } = get()
+
+    const unchosen = allDangers.filter((d) => d.id !== danger.id)
+
+    // เอาการ์ด danger/knowledge จาก danger ที่ไม่ได้เลือก
+    const toDeck = unchosen.flatMap((d) => [d.danger, d.knowledge])
+
     set(() => ({
       dangerSelected: danger,
       dangerScore: danger.danger.danger?.[field] ?? 0,
       drawPoint: danger.danger.pick,
-      onDraw: true
+      onDraw: true,
+      onDeck: [...onDeck, ...toDeck]
     }))
   },
-
   setChat: (log) => set((state) => ({ chatLogs: [...state.chatLogs, log] })),
 
   score: () => get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
@@ -153,12 +160,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
       const robinsonDeck = newDeck.filter((c) =>
         ['ROBINSON', 'AGE', 'KNOWLEDGE'].includes(c.type)
       )
-
+      const [age, ...a] = get().ageCard
       const remainingDeck = newDeck.filter(
         (c) => !['ROBINSON', 'AGE', 'KNOWLEDGE'].includes(c.type)
       )
 
-      const reshuffled = shuffle(robinsonDeck)
+      console.log(a)
+
+      const reshuffled = shuffle([...robinsonDeck, age])
 
       set(() => ({
         robinsonCard: reshuffled,
@@ -181,8 +190,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return card
   },
   adventureCard: () => {
-    const dangerCards = [...get().dangerCard]
-    const knowledgeCards = [...get().knowledgeCard]
+    let dangerCards = [...get().dangerCard]
+    let knowledgeCards = [...get().knowledgeCard]
+
+    const onDeck = [...get().onDeck]
+
+    // ถ้า danger หรือ knowledge หมด → ดึงจาก onDeck มาเติม และเพิ่ม field
+    if (dangerCards.length === 0 || knowledgeCards.length === 0) {
+      const newDangerCards = onDeck.filter((c) => c.type === 'DANGER')
+      const newKnowledgeCards = onDeck.filter((c) => c.type === 'KNOWLEDGE')
+      const remainingDeck = onDeck.filter(
+        (c) => !['DANGER', 'KNOWLEDGE'].includes(c.type)
+      )
+
+      dangerCards = shuffle(newDangerCards)
+      knowledgeCards = shuffle(newKnowledgeCards)
+
+      set((state) => ({
+        onDeck: remainingDeck,
+        field: (state.field + 1) as 0 | 1 | 2
+      }))
+    }
+
     const pairs: Danger[] = []
 
     for (let i = 0; i < 2; i++) {
@@ -190,7 +219,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
       const danger = dangerCards.splice(0, 1)[0]
       const knowledge = knowledgeCards.splice(0, 1)[0]
-      pairs.push({ danger, knowledge })
+      pairs.push({ danger, knowledge, id: i })
     }
 
     set({
@@ -200,7 +229,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     return pairs
   },
-
   setup: async (cards) => {
     const byType = (type: string) => cards.filter((card) => card.type === type)
     const robinsonExt = extractCard(byType('ROBINSON'))
@@ -209,8 +237,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const knowledgeExt = extractCard(byType('KNOWLEDGE'))
 
     set(() => ({
-      ageCard: byType('AGE'),
-      robinsonCard: shuffle([...robinsonExt, ...ageExt]),
+      ageCard: shuffle(ageExt),
+      robinsonCard: shuffle([...robinsonExt]),
       dangerCard: shuffle(dangerExt),
       knowledgeCard: shuffle(knowledgeExt),
       onGameStart: true
