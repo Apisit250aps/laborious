@@ -49,8 +49,7 @@ type GameStore = {
 
   // Game states
   onDraw: boolean
-  dangerSelected: Danger
-  dangerScore: number
+  dangerSelected: Danger | null
 
   // Chat
   chatLogs: ChatLogs[]
@@ -60,7 +59,6 @@ type GameStore = {
   setHealth: (point: number) => void
   setOnDraw: (state: boolean) => void
   setDanger: (danger: Danger, allDangers: Danger[]) => void
-  setDangerScore: (score: number) => void
   setChat: (logs: ChatLogs) => void
   setFight: (danger: Danger) => void
   setWhiteFlag: (danger: Danger) => void
@@ -72,7 +70,8 @@ type GameStore = {
   save: () => void
   drawCard: () => Card | null
   adventureCard: () => Danger[]
-  score: () => number
+  attackScore: () => number
+  dangerScore: () => number
   setEndRound: () => void
 }
 
@@ -84,8 +83,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   win: 0,
   lose: 0,
   drawPoint: 0,
-  dangerSelected: {} as Danger,
-  dangerScore: 0,
+  dangerSelected: null,
+
   onDraw: false,
   onGameStart: false,
 
@@ -109,10 +108,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
   setHealth: (point) => set((state) => ({ health: state.health + point })),
 
   setOnDraw: (onDraw) => set(() => ({ onDraw })),
-
-  setDangerScore: (score) =>
-    set((state) => ({ dangerScore: state.dangerScore + score })),
-
   setDanger: (danger, allDangers) => {
     const { field, onDeck } = get()
 
@@ -123,7 +118,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     set(() => ({
       dangerSelected: danger,
-      dangerScore: danger.danger.danger?.[field] ?? 0,
       drawPoint: danger.danger.pick,
       onDraw: true,
       onGraveyard: [...onDeck, ...toDeck]
@@ -131,7 +125,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
   setChat: (log) => set((state) => ({ chatLogs: [...state.chatLogs, log] })),
 
-  score: () => get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
+  attackScore: () =>
+    get().onHand.reduce((sum, item) => sum + (item.score ?? 0), 0),
+  dangerScore: () => {
+    const { field, dangerSelected } = get()
+
+    const danger = dangerSelected ? dangerSelected.danger.danger![field] : 0
+    return danger - get().attackScore()
+  },
   setFight: (danger) => {
     const { onHand } = get()
     const handCard = onHand.map((card) => {
@@ -139,7 +140,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       console.log(isActive)
       return rest
     })
-    
+
     set((state) => ({
       onDeck: [...state.onDeck, danger.knowledge, ...handCard],
       onDestroy: [...state.onDestroy, danger.danger],
@@ -149,7 +150,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   setWhiteFlag: (danger) => {
-    const { onHand } = get()
+    const { onHand, field, dangerScore } = get()
     const handCard = onHand.map((card) => {
       const { isActive, ...rest } = card
       console.log(isActive)
@@ -158,6 +159,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     set((state) => ({
       onDeck: [...state.onDeck, ...handCard],
       onHand: [],
+      health: state.health - dangerScore(),
       lose: state.lose + 1,
       onGraveyard: [...state.onGraveyard, danger.knowledge, danger.danger]
     }))
@@ -294,7 +296,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
       round: state.round + 1,
       onDraw: false,
       drawPoint: 0,
-      dangerScore: 0,
-      dangerSelected: {} as Danger
+      dangerSelected: null
     }))
 }))

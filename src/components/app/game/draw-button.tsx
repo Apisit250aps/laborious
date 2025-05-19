@@ -1,7 +1,7 @@
 'use client'
 import React, { useCallback } from 'react'
 import HandCard from './hand-card'
-import { useGameStore } from '@/stores/game'
+import { Danger, useGameStore } from '@/stores/game'
 import Swal from 'sweetalert2'
 
 export default function DrawButton() {
@@ -14,18 +14,18 @@ export default function DrawButton() {
     setDrawPoint,
     setFight,
     setWhiteFlag,
-    score,
+    attackScore,
     dangerScore,
     setEndRound
   } = useGameStore()
 
   const Attack = useCallback(() => {
-    setFight(dangerSelected)
+    setFight(dangerSelected as Danger)
     setEndRound()
   }, [dangerSelected, setEndRound, setFight])
 
   const giveUp = useCallback(() => {
-    setWhiteFlag(dangerSelected)
+    setWhiteFlag(dangerSelected as Danger)
     setEndRound()
   }, [dangerSelected, setEndRound, setWhiteFlag])
 
@@ -69,15 +69,16 @@ export default function DrawButton() {
   return (
     <>
       <HandCard />
-      {score() < dangerScore ? (
+      {drawPoint <= 0 && attackScore() < dangerScore() ? (
         <button className="btn" onClick={giveUp}>
           <i className="ri-flag-line"></i>ยอมแพ้
         </button>
-      ) : (
+      ) : null}
+      {drawPoint <= 0 && attackScore() >= dangerScore() ? (
         <button className="btn" onClick={Attack}>
           <i className="ri-flag-line"></i>ต่อสู้
         </button>
-      )}
+      ) : null}
       <button className="btn" onClick={onDrawCard}>
         <i className="ri-fire-line"></i>จั่วการ์ด
       </button>

@@ -53,10 +53,10 @@ const columns: ColumnDef<Card>[] = [
 export default function App() {
   const {
     health,
-    score,
     drawPoint,
     round,
     dangerScore,
+    attackScore,
     robinsonCard,
     knowledgeCard,
     dangerCard,
@@ -111,7 +111,7 @@ export default function App() {
                 <li>
                   <a>
                     <i className="ri-skull-2-line"></i>
-                    {dangerScore}
+                    {dangerScore()}
                   </a>
                 </li>
                 <li>
@@ -138,7 +138,7 @@ export default function App() {
                   <li>
                     <a>
                       <i className="ri-sword-line"></i>
-                      {score()}
+                      {attackScore()}
                     </a>
                   </li>
                   <li>
