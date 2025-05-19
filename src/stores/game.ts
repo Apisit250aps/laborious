@@ -29,6 +29,7 @@ export type ChatLogs = {
 type GameStore = {
   // Core status
   field: 0 | 1 | 2
+  round: number
   health: number
   drawPoint: number
   onGameStart: boolean
@@ -77,6 +78,7 @@ type GameStore = {
 export const useGameStore = create<GameStore>((set, get) => ({
   // --- State Initialization ---
   field: 0 as 0 | 1 | 2,
+  round: 1,
   health: 200,
   win: 0,
   lose: 0,
@@ -286,7 +288,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     localStorage.setItem('save', save)
   },
   setEndRound: () =>
-    set(() => ({
+    set((state) => ({
+      round: state.round + 1,
       onDraw: false,
       drawPoint: 0,
       dangerScore: 0,

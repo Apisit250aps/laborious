@@ -1,4 +1,6 @@
 'use client'
+
+import ChatLogs from '@/components/app/chat-logs'
 import DataTable from '@/components/share/table/DataTable'
 import { useGameStore } from '@/stores/game'
 import { Card } from '@/types/card'
@@ -53,21 +55,28 @@ const columns: ColumnDef<Card>[] = [
 export default function App() {
   const {
     health,
-    setup,
+    round,
     robinsonCard,
     knowledgeCard,
     dangerCard,
     ageCard,
     onDeck,
     onDestroy,
-    onGraveyard
+    onGraveyard,
+    setup,
+    setChat
   } = useGameStore()
 
   const [cardInfo, setCardInfo] = useState<Card[]>([])
 
   const onInit = useCallback(async () => {
     await setup()
-  }, [setup])
+    setChat({
+      role: 'system',
+      message: 'เริ่มต้นการผจญภัย',
+      send: new Date()
+    })
+  }, [setChat, setup])
 
   const Info = useCallback((cards: Card[]) => {
     setCardInfo(cards)
@@ -97,6 +106,12 @@ export default function App() {
               <ul className="menu menu-horizontal">
                 <li>
                   <a>
+                    <i className="ri-time-line"></i>
+                    {round}
+                  </a>
+                </li>
+                <li>
+                  <a>
                     <i className="ri-poker-hearts-fill text-error"></i>
                     {health}
                   </a>
@@ -106,13 +121,7 @@ export default function App() {
           </nav>
           {/* contents */}
           <main className="px-3 py-2">
-            <div className="breadcrumbs text-sm">
-              <ul>
-                <li>
-                  <a>Home</a>
-                </li>
-              </ul>
-            </div>
+            <ChatLogs />
             <footer className="absolute bottom-0">
               <button className="btn btn-outline btn-neutral">Play</button>
             </footer>
