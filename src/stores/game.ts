@@ -109,7 +109,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
   setOnDraw: (onDraw) => set(() => ({ onDraw })),
   setDanger: (danger, allDangers) => {
-    const { field, onDeck } = get()
+    const { onDeck } = get()
 
     const unchosen = allDangers.filter((d) => d.id !== danger.id)
 
@@ -150,7 +150,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   setWhiteFlag: (danger) => {
-    const { onHand, field, dangerScore } = get()
+    const { onHand, dangerScore } = get()
     const handCard = onHand.map((card) => {
       const { isActive, ...rest } = card
       console.log(isActive)
