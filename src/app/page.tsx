@@ -55,7 +55,9 @@ const columns: ColumnDef<Card>[] = [
 export default function App() {
   const {
     health,
+    score,
     round,
+    dangerScore,
     robinsonCard,
     knowledgeCard,
     dangerCard,
@@ -93,7 +95,7 @@ export default function App() {
         <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
         <div className="drawer-content max-h-screen">
           {/* navbar */}
-          <nav className="navbar">
+          <nav className="navbar sticky top">
             <div className="flex-1 ">
               <label
                 htmlFor="my-drawer-2"
@@ -106,14 +108,14 @@ export default function App() {
               <ul className="menu menu-horizontal">
                 <li>
                   <a>
-                    <i className="ri-time-line"></i>
-                    {round}
+                    <i className="ri-skull-2-line"></i>
+                    {dangerScore}
                   </a>
                 </li>
                 <li>
                   <a>
-                    <i className="ri-poker-hearts-fill text-error"></i>
-                    {health}
+                    <i className="ri-time-line"></i>
+                    {round}
                   </a>
                 </li>
               </ul>
@@ -122,16 +124,35 @@ export default function App() {
           {/* contents */}
           <main className="h-[calc(100vh-64px)] overflow-y-auto px-3 py-2">
             <ChatLogs />
-            <form className="flex items-center gap-2 px-3 py-2 sticky bottom-0">
-              <input
-                type="text"
-                className="input input-bordered w-full"
-                placeholder="พิมพ์ข้อความ..."
-              />
-              <button type="submit" className="btn btn-primary">
-                ส่ง
-              </button>
-            </form>
+            <footer className="flex flex-col lg:flex-row gap-2 px-3 py-2 sticky bottom-0">
+              <div className="flex-none">
+                <ul className="menu menu-horizontal">
+                  <li>
+                    <a>
+                      <i className="ri-poker-hearts-fill text-error"></i>
+                      {health}
+                    </a>
+                  </li>
+                  <li>
+                    <a>
+                      <i className="ri-sword-line"></i>
+                      {score()}
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <div className="flex space-x-2 justify-end w-full">
+                <button className="btn">
+                  <i className="ri-hand"></i>บนมือ
+                </button>
+                <button className="btn">
+                  <i className="ri-flag-line"></i>ยอมแพ้
+                </button>
+                <button className="btn">
+                  <i className="ri-fire-line"></i>จั่วการ์ด
+                </button>
+              </div>
+            </footer>
           </main>
           <dialog id="show-card" className="modal">
             <div className="modal-box w-11/12 max-w-5xl max-h-96">
