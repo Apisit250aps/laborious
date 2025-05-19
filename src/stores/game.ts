@@ -125,7 +125,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       dangerScore: danger.danger.danger?.[field] ?? 0,
       drawPoint: danger.danger.pick,
       onDraw: true,
-      onDeck: [...onDeck, ...toDeck]
+      onGraveyard: [...onDeck, ...toDeck]
     }))
   },
   setChat: (log) => set((state) => ({ chatLogs: [...state.chatLogs, log] })),

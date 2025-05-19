@@ -1,16 +1,14 @@
 'use client'
 
 import ChatLogs from '@/components/app/chat-logs'
+import AdventureButton from '@/components/app/game/adventure-button'
+import DrawButton from '@/components/app/game/draw-button'
 import DataTable from '@/components/share/table/DataTable'
+import { openModal } from '@/libs/utils'
 import { useGameStore } from '@/stores/game'
 import { Card } from '@/types/card'
 import { ColumnDef } from '@tanstack/react-table'
 import React, { useCallback, useEffect, useState } from 'react'
-
-export const openModal = (id: string) => {
-  const modal = document.getElementById(id) as HTMLDialogElement
-  modal.showModal()
-}
 
 const columns: ColumnDef<Card>[] = [
   {
@@ -56,6 +54,7 @@ export default function App() {
   const {
     health,
     score,
+    drawPoint,
     round,
     dangerScore,
     robinsonCard,
@@ -65,6 +64,9 @@ export default function App() {
     onDeck,
     onDestroy,
     onGraveyard,
+    //
+    onDraw,
+    //
     setup,
     setChat
   } = useGameStore()
@@ -139,18 +141,16 @@ export default function App() {
                       {score()}
                     </a>
                   </li>
+                  <li>
+                    <a>
+                      <i className="ri-dice-line"></i>
+                      {drawPoint}
+                    </a>
+                  </li>
                 </ul>
               </div>
               <div className="flex space-x-2 justify-end w-full">
-                <button className="btn">
-                  <i className="ri-hand"></i>บนมือ
-                </button>
-                <button className="btn">
-                  <i className="ri-flag-line"></i>ยอมแพ้
-                </button>
-                <button className="btn">
-                  <i className="ri-fire-line"></i>จั่วการ์ด
-                </button>
+                {onDraw ? <DrawButton /> : <AdventureButton />}
               </div>
             </footer>
           </main>
