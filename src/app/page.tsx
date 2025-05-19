@@ -1,12 +1,54 @@
 'use client'
+import DataTable from '@/components/share/table/DataTable'
 import { useGameStore } from '@/stores/game'
 import { Card } from '@/types/card'
+import { ColumnDef } from '@tanstack/react-table'
 import React, { useCallback, useEffect, useState } from 'react'
 
 export const openModal = (id: string) => {
   const modal = document.getElementById(id) as HTMLDialogElement
   modal.showModal()
 }
+
+const columns: ColumnDef<Card>[] = [
+  {
+    accessorKey: 'title',
+    header: 'Title'
+  },
+  {
+    accessorKey: 'type',
+    header: 'Type'
+  },
+  {
+    accessorKey: 'pick',
+    header: 'Pick'
+  },
+  {
+    accessorKey: 'danger',
+    header: 'Danger'
+  },
+  {
+    accessorKey: 'score',
+    header: 'Score'
+  },
+  {
+    accessorKey: 'actionData',
+    header: 'Action',
+    cell: ({ row }) => <>{row.original.actionData?.title}</>
+  },
+  {
+    accessorKey: 'token',
+    header: 'Token'
+  },
+  {
+    accessorKey: 'level',
+    header: 'Level'
+  },
+  {
+    accessorKey: 'quantity',
+    header: 'Quantity'
+  }
+]
 
 export default function App() {
   const {
@@ -84,30 +126,11 @@ export default function App() {
                 </button>
               </form>
               <h3 className="font-bold text-lg ">Card information!</h3>
-              <div className="">
-                <div className="overflow-x-auto">
-                  <table className="table table-xs">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th>Name</th>
-                        <th>Score</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cardInfo.map((card, index) => (
-                        <tr key={index}>
-                          <th>{index + 1}</th>
-                          <td>{card.title}</td>
-                          <td>{card.score}</td>
-                          <td>{card.actionData?.title}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <DataTable
+                data={cardInfo || []}
+                loading={false}
+                columns={columns}
+              />
             </div>
             <form method="dialog" className="modal-backdrop">
               <button>close</button>
