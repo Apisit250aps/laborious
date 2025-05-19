@@ -18,6 +18,7 @@ export type Danger = {
 
 export interface HandCard extends Card {
   isActive: boolean
+  id: number
 }
 
 export type ChatLogs = {
@@ -79,7 +80,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   // --- State Initialization ---
   field: 0 as 0 | 1 | 2,
   round: 1,
-  health: 200,
+  health: 20,
   win: 0,
   lose: 0,
   drawPoint: 0,
@@ -138,6 +139,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       console.log(isActive)
       return rest
     })
+    
     set((state) => ({
       onDeck: [...state.onDeck, danger.knowledge, ...handCard],
       onDestroy: [...state.onDestroy, danger.danger],
@@ -196,7 +198,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     set(() => ({
       robinsonCard: remaining,
-      onHand: [...onHand, { ...card, isActive: true }],
+      onHand: [...onHand, { ...card, isActive: true, id: onHand.length }],
       drawPoint: drawPoint - 1
     }))
 
