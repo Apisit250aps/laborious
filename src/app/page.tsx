@@ -1,46 +1,141 @@
 'use client'
-
-import CardContent from '@/components/share/layouts/CardContent'
-import GameLayout from '@/components/share/layouts/GameLayout'
-import DrawButton from '@/components/app/draw-button'
-import PlayButton from '@/components/app/play-button'
 import { useGameStore } from '@/stores/game'
-import HandButton from '@/components/app/hand-button'
+import React, { useCallback, useEffect } from 'react'
 
-export default function Home() {
-  const { onDraw, chatLogs } = useGameStore()
- 
+export default function App() {
+  const {
+    health,
+    setup,
+    robinsonCard,
+    knowledgeCard,
+    dangerCard,
+    ageCard,
+    onDeck,
+    onDestroy,
+    onGraveyard
+  } = useGameStore()
+
+  const onInit = useCallback(async () => {
+    await setup()
+  }, [setup])
+
+  useEffect(() => {
+    onInit()
+  }, [onInit])
+
   return (
     <>
-      <GameLayout>
-        <CardContent title="Game">
-          <main className="max-h-100 min-h-100 overflow-y-auto">
-            {chatLogs.map((chat, index) => (
-              <div
-                key={index}
-                className={`chat ${
-                  chat.role === 'system' ? 'chat-start' : 'chat-end'
-                }`}
+      <div className="drawer lg:drawer-open">
+        <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
+        <div className="drawer-content max-h-screen">
+          {/* navbar */}
+          <nav className="navbar">
+            <div className="flex-1 ">
+              <label
+                htmlFor="my-drawer-2"
+                className="btn btn-ghost drawer-button lg:hidden "
               >
-                <div className="chat-bubble">{chat.message}</div>
-                <div className="chat-footer opacity-50">Seen</div>
-              </div>
-            ))}
+                <i className="ri-menu-2-line"></i>
+              </label>
+            </div>
+            <div className="flex-none">
+              <ul className="menu menu-horizontal">
+                <li>
+                  <a>
+                    <i className="ri-poker-hearts-fill text-error"></i>
+                    {health}
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </nav>
+          {/* contents */}
+          <main>
+            <footer className="absolute bottom-0">
+              <button className="btn btn-outline btn-neutral">Play</button>
+            </footer>
           </main>
-        </CardContent>
-        <div className="px-3 flex justify-end">
-          {onDraw ? (
-            <>
-              <div className="space-x-3">
-                <HandButton />
-                <DrawButton />
-              </div>
-            </>
-          ) : (
-            <PlayButton />
-          )}
         </div>
-      </GameLayout>
+        <div className="drawer-side">
+          <label
+            htmlFor="my-drawer-2"
+            aria-label="close sidebar"
+            className="drawer-overlay"
+          ></label>
+          <ul className="menu bg-base-200 text-base-content min-h-full w-80 p-4">
+            {/* Sidebar content here */}
+            <li>
+              <a>Game</a>
+            </li>
+            <li>
+              <h2 className="menu-title">Cards</h2>
+              <ul>
+                <li>
+                  <a>
+                    <i className="ri-boxing-line"></i> Robinson{' '}
+                    <div className="badge badge-soft badge-success">
+                      {robinsonCard.length}
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <i className="ri-graduation-cap-line"></i> Knowledge{' '}
+                    <div className="badge badge-soft badge-info">
+                      {knowledgeCard.length}
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <i className="ri-skull-line"></i>Dangerous{' '}
+                    <div className="badge badge-soft badge-error">
+                      {dangerCard.length}
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <i className="ri-calendar-close-line"></i>Age{' '}
+                    <div className="badge badge-soft badge-warning">
+                      {ageCard.length}
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li>
+              <h2 className="menu-title">Experience</h2>
+              <ul>
+                <li>
+                  <a>
+                    <i className="ri-stack-line"></i>Deck{' '}
+                    <div className="badge badge-soft badge-warning">
+                      {onDeck.length}
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <i className="ri-delete-bin-2-line"></i>Destroyed{' '}
+                    <div className="badge badge-soft badge-warning">
+                      {onDestroy.length}
+                    </div>
+                  </a>
+                </li>
+                <li>
+                  <a>
+                    <i className="ri-cross-line"></i>Graveyard{' '}
+                    <div className="badge badge-soft badge-warning">
+                      {onGraveyard.length}
+                    </div>
+                  </a>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </div>
     </>
   )
 }

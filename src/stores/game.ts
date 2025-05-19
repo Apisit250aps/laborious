@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { shuffle } from 'lodash'
 import { Card } from '@/types/card'
+import { GetCardsService } from '@/services/cards'
 
 /** Utility: สร้างสำเนาการ์ดตาม quantity */
 const extractCard = (cards: Card[]) =>
@@ -31,15 +32,18 @@ type GameStore = {
   health: number
   drawPoint: number
   onGameStart: boolean
-
+  win: number
+  lose: number
   // Card groups
+  cards: Card[]
   robinsonCard: Card[]
   dangerCard: Card[]
   knowledgeCard: Card[]
   ageCard: Card[]
   onDeck: Card[]
   onHand: HandCard[]
-  trash: Card[]
+  onDestroy: Card[]
+  onGraveyard: Card[]
 
   // Game states
   onDraw: boolean
@@ -60,7 +64,8 @@ type GameStore = {
   setWhiteFlag: (danger: Danger) => void
 
   // --- Game logic ---
-  setup: (cards: Card[]) => Promise<boolean>
+  setup: () => Promise<boolean>
+  loadCard: () => Promise<void>
   loadSave: () => Promise<void>
   save: () => void
   drawCard: () => Card | null
@@ -73,6 +78,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   // --- State Initialization ---
   field: 0 as 0 | 1 | 2,
   health: 200,
+  win: 0,
+  lose: 0,
   drawPoint: 0,
   dangerSelected: {} as Danger,
   dangerScore: 0,
@@ -80,14 +87,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
   onGameStart: false,
 
   // Cards
+  cards: [],
   robinsonCard: [],
   dangerCard: [],
   knowledgeCard: [],
   ageCard: [],
   onDeck: [],
   onHand: [],
-  trash: [],
-
+  onDestroy: [],
+  onGraveyard: [],
   // Chat
   chatLogs: [],
 
@@ -130,7 +138,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     })
     set((state) => ({
       onDeck: [...state.onDeck, danger.knowledge, ...handCard],
-      trash: [...state.trash, danger.danger],
+      onDestroy: [...state.onDestroy, danger.danger],
+      win: state.win + 1,
       onHand: []
     }))
   },
@@ -143,8 +152,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
       return rest
     })
     set((state) => ({
-      onDeck: [...state.onDeck, danger.knowledge, danger.danger, ...handCard],
-      onHand: []
+      onDeck: [...state.onDeck, ...handCard],
+      onHand: [],
+      lose: state.lose + 1,
+      onGraveyard: [...state.onGraveyard, danger.knowledge, danger.danger]
     }))
   },
   // --- Card Mechanics ---
@@ -193,7 +204,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     let dangerCards = [...get().dangerCard]
     let knowledgeCards = [...get().knowledgeCard]
 
-    const onDeck = [...get().onDeck]
+    const onDeck = [...get().onGraveyard]
 
     // ถ้า danger หรือ knowledge หมด → ดึงจาก onDeck มาเติม และเพิ่ม field
     if (dangerCards.length === 0 || knowledgeCards.length === 0) {
@@ -229,7 +240,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     return pairs
   },
-  setup: async (cards) => {
+  setup: async () => {
+    await get().loadCard()
+
+    const cards = get().cards
     const byType = (type: string) => cards.filter((card) => card.type === type)
     const robinsonExt = extractCard(byType('ROBINSON'))
     const ageExt = extractCard(byType('AGE'))
@@ -244,6 +258,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
       onGameStart: true
     }))
     return true
+  },
+
+  loadCard: async () => {
+    const { success, message, data } = await GetCardsService({ limit: 1000 })
+    if (success) {
+      set(() => ({ cards: data!.data }))
+    } else {
+      throw new Error(message)
+    }
+    return
   },
 
   loadSave: async () => {
