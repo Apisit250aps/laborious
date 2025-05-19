@@ -120,11 +120,18 @@ export default function App() {
             </div>
           </nav>
           {/* contents */}
-          <main className="px-3 py-2">
+          <main className="h-[calc(100vh-64px)] overflow-y-auto px-3 py-2">
             <ChatLogs />
-            <footer className="absolute bottom-0">
-              <button className="btn btn-outline btn-neutral">Play</button>
-            </footer>
+            <form className="flex items-center gap-2 px-3 py-2 sticky bottom-0">
+              <input
+                type="text"
+                className="input input-bordered w-full"
+                placeholder="พิมพ์ข้อความ..."
+              />
+              <button type="submit" className="btn btn-primary">
+                ส่ง
+              </button>
+            </form>
           </main>
           <dialog id="show-card" className="modal">
             <div className="modal-box w-11/12 max-w-5xl max-h-96">
