@@ -1,7 +1,7 @@
 'use client'
 import React, { useCallback } from 'react'
 import HandCard from './hand-card'
-import { Danger, useGameStore } from '@/stores/game'
+import { ChatLogs, Danger, useGameStore } from '@/stores/game'
 import Swal from 'sweetalert2'
 
 export default function DrawButton() {
@@ -16,69 +16,90 @@ export default function DrawButton() {
     setWhiteFlag,
     attackScore,
     dangerScore,
-    setEndRound
+    setEndRound,
+    ageCardAction
   } = useGameStore()
 
-  const Attack = useCallback(() => {
-    setFight(dangerSelected as Danger)
-    setEndRound()
-  }, [dangerSelected, setEndRound, setFight])
+  const handleEndRound = useCallback(
+    (giveUp: boolean) => {
+      if (!dangerSelected) return
+      if (giveUp) {
+        setWhiteFlag(dangerSelected as Danger)
+      } else {
+        setFight(dangerSelected as Danger)
+      }
+      setEndRound()
+    },
+    [dangerSelected, setFight, setWhiteFlag, setEndRound]
+  )
+  const notifyDraw = useCallback(
+    (cardTitle?: string) => {
+      if (!cardTitle) return
+      setChat({
+        role: 'player',
+        message: `จั่วได้ ${cardTitle}`,
+        send: new Date()
+      } as ChatLogs)
+    },
+    [setChat]
+  )
+  const drawAction = useCallback(() => {
+    const card = drawCard()
+    notifyDraw(card?.title)
 
-  const giveUp = useCallback(() => {
-    setWhiteFlag(dangerSelected as Danger)
-    setEndRound()
-  }, [dangerSelected, setEndRound, setWhiteFlag])
+    if (card?.type == 'AGE') {
+      ageCardAction(card)
+    }
+  }, [ageCardAction, drawCard, notifyDraw])
 
   const onDrawCard = useCallback(async () => {
     if (drawPoint > 0) {
-      const card = drawCard()
+      drawAction()
+      return
+    }
+
+    const result = await Swal.fire({
+      title: 'แต้มจั่วการ์ดไม่พอ!',
+      text: 'คุณจะยอมเสียเลือด 1 แต้มเพื่อจั่ว',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'ยินยอม'
+    })
+
+    if (result.isConfirmed) {
+      setHealth(-1)
+      setDrawPoint(1)
+
       setChat({
         role: 'player',
-        message: `จั่วได้ ${card?.title}`,
+        message: 'บาดเจ็บ เลือด -1',
         send: new Date()
       })
-    } else {
-      Swal.fire({
-        title: 'แต้มจั่วการ์ดไม่พอ!',
-        text: 'คุณจะยอมเสียเลือด 1 แต้มเพื่อจั่ว',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'ยินยอม'
-      }).then((result) => {
-        if (result.isConfirmed) {
-          setHealth(-1)
-          setDrawPoint(1)
-          const card = drawCard()
-          setChat({
-            role: 'player',
-            message: `บาดเจ็บ เลือด -1`,
-            send: new Date()
-          })
-          setChat({
-            role: 'player',
-            message: `จั่วได้ ${card?.title}`,
-            send: new Date()
-          })
-        }
-      })
+      drawAction()
     }
-  }, [drawCard, drawPoint, setChat, setDrawPoint, setHealth])
+  }, [drawPoint, drawAction, setHealth, setDrawPoint, setChat])
+
+  const canAttack = drawPoint <= 0 && attackScore() >= dangerScore()
+  const canGiveUp = drawPoint <= 0 && attackScore() < dangerScore()
 
   return (
     <>
       <HandCard />
-      {drawPoint <= 0 && attackScore() < dangerScore() ? (
-        <button className="btn" onClick={giveUp}>
+
+      {canGiveUp && (
+        <button className="btn" onClick={() => handleEndRound(true)}>
           <i className="ri-flag-line"></i>ยอมแพ้
         </button>
-      ) : null}
-      {drawPoint <= 0 && attackScore() >= dangerScore() ? (
-        <button className="btn" onClick={Attack}>
+      )}
+
+      {canAttack && (
+        <button className="btn" onClick={() => handleEndRound(false)}>
           <i className="ri-flag-line"></i>ต่อสู้
         </button>
-      ) : null}
+      )}
+
       <button className="btn" onClick={onDrawCard}>
         <i className="ri-fire-line"></i>จั่วการ์ด
       </button>

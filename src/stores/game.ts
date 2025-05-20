@@ -73,6 +73,7 @@ type GameStore = {
   attackScore: () => number
   dangerScore: () => number
   setEndRound: () => void
+  ageCardAction: (card: Card) => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -258,7 +259,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     set(() => ({
       ageCard: shuffle(ageExt),
-      robinsonCard: shuffle([...robinsonExt]),
+      robinsonCard: shuffle([...robinsonExt, ...shuffle(ageExt)]),
       dangerCard: shuffle(dangerExt),
       knowledgeCard: shuffle(knowledgeExt),
       onGameStart: true
@@ -297,5 +298,30 @@ export const useGameStore = create<GameStore>((set, get) => ({
       onDraw: false,
       drawPoint: 0,
       dangerSelected: null
-    }))
+    })),
+  ageCardAction: (card) => {
+    const { codex, value } = card.actionData!
+    switch (codex) {
+      case 'HP':
+        set((state) => ({ health: state.health + value }))
+        break
+      case 'CARD':
+        set((state) => ({ drawPoint: state.drawPoint + value }))
+        break
+      case 'STOP':
+        set(() => ({ drawPoint: 0 }))
+        break
+      case 'ZERO':
+        set((state) => {
+          const maxScore = Math.max(...state.onHand.map((c) => c.score ?? 0))
+          const newHand = state.onHand.map((c) =>
+            (c.score ?? 0) === maxScore ? { ...c, score: 0 } : c
+          )
+          return { onHand: newHand }
+        })
+        break
+      default:
+        break
+    }
+  }
 }))
