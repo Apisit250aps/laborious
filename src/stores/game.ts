@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { shuffle } from 'lodash'
 import { Card } from '@/types/card'
 import { GetCardsService } from '@/services/cards'
+import { decryptObject, encryptObject } from '@/libs/crypto'
 
 /** Utility: สร้างสำเนาการ์ดตาม quantity */
 const extractCard = (cards: Card[]) =>
@@ -32,7 +33,7 @@ export type ChatLogs = {
   type?: ChatType
 }
 
-type GameStore = {
+export type GameStore = {
   // Core status
   field: 0 | 1 | 2
   round: number
@@ -312,18 +313,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
   loadSave: async () => {
     const save = localStorage.getItem(SAVE)
     if (!save) return
+
     try {
-      const saveObj = JSON.parse(save)
-      set(() => ({ ...saveObj }))
+      const saveObj = await decryptObject(save)
+      set(() => ({ ...saveObj } as GameStore))
     } catch (err) {
-      console.error('Failed to load save:', err)
+      console.error('❌ Failed to decrypt save:', err)
     }
   },
-  save: () => {
+
+  save: async () => {
     const store = get()
-    const save = JSON.stringify(store)
-    localStorage.setItem(SAVE, save)
-    localStorage.setItem(ON_GAME_START, `${get().onGameStart}`)
+    const encrypted = await encryptObject(store)
+    localStorage.setItem(SAVE, encrypted)
+    localStorage.setItem(ON_GAME_START, `${store.onGameStart}`)
   },
   setEndRound: () =>
     set((state) => ({
