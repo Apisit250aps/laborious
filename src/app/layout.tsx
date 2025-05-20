@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
-import { Mitr } from "next/font/google";
+import { sarabun } from "./fonts";
 import "./globals.css";
 import 'remixicon/fonts/remixicon.css'
-
-const mitr = Mitr({
-  variable: "--font-mitr",
-  subsets: ["latin", "thai"],
-  weight: ["200", "300", "400", "500", "600", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -22,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${mitr.variable} antialiased`}
+        className={`${sarabun.variable} antialiased`}
       >
         {children}
       </body>
