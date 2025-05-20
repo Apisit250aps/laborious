@@ -68,19 +68,15 @@ export default function App() {
     onDraw,
     //
     setup,
-    setChat
+    save,
+    reset
   } = useGameStore()
 
   const [cardInfo, setCardInfo] = useState<Card[]>([])
 
   const onInit = useCallback(async () => {
     await setup()
-    setChat({
-      role: 'system',
-      message: 'เริ่มต้นการผจญภัย',
-      send: new Date()
-    })
-  }, [setChat, setup])
+  }, [setup])
 
   const Info = useCallback((cards: Card[]) => {
     setCardInfo(cards)
@@ -90,6 +86,16 @@ export default function App() {
   useEffect(() => {
     onInit()
   }, [onInit])
+
+  useEffect(() => {
+    // สร้าง subscription เพื่อดักฟังการเปลี่ยนแปลงของค่าใน store
+    const unsub = useGameStore.subscribe(() => {
+      save()
+      return true
+    })
+
+    return () => unsub()
+  }, [save])
 
   return (
     <>
@@ -250,6 +256,9 @@ export default function App() {
                   </a>
                 </li>
               </ul>
+            </li>
+            <li>
+              <a onClick={reset}>Reset</a>
             </li>
           </ul>
         </div>

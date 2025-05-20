@@ -16,6 +16,9 @@ export type Danger = {
   knowledge: Card
 }
 
+export const SAVE = 'save'
+export const ON_GAME_START = 'onGameStart'
+
 export interface HandCard extends Card {
   isActive: boolean
   id: number
@@ -68,6 +71,7 @@ type GameStore = {
 
   // --- Game logic ---
   setup: () => Promise<boolean>
+  reset: () => void
   loadCard: () => Promise<void>
   loadSave: () => Promise<void>
   save: () => void
@@ -259,23 +263,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
     return pairs
   },
   setup: async () => {
-    await get().loadCard()
+    const onStart = localStorage.getItem(ON_GAME_START)
+    if (onStart === 'true') {
+      await get().loadSave()
+    } else {
+      await get().loadCard()
+      const cards = get().cards
+      const byType = (type: string) =>
+        cards.filter((card) => card.type === type)
+      const robinsonExt = extractCard(byType('ROBINSON'))
+      const ageExt = extractCard(byType('AGE'))
+      const dangerExt = extractCard(byType('DANGER'))
+      const knowledgeExt = extractCard(byType('KNOWLEDGE'))
+      set(() => ({
+        ageCard: shuffle(ageExt),
+        robinsonCard: shuffle([...robinsonExt, ...shuffle(knowledgeExt)]),
+        dangerCard: shuffle(dangerExt),
+        knowledgeCard: shuffle(knowledgeExt),
+        onGameStart: true,
+        chatLogs: [
+          {
+            role: 'system',
+            message: 'เริ่มต้นการผจญภัย',
+            send: new Date()
+          }
+        ]
+      }))
+      get().save()
+    }
 
-    const cards = get().cards
-    const byType = (type: string) => cards.filter((card) => card.type === type)
-    const robinsonExt = extractCard(byType('ROBINSON'))
-    const ageExt = extractCard(byType('AGE'))
-    const dangerExt = extractCard(byType('DANGER'))
-    const knowledgeExt = extractCard(byType('KNOWLEDGE'))
-
-    set(() => ({
-      ageCard: shuffle(ageExt),
-      robinsonCard: shuffle([...robinsonExt, ...shuffle(ageExt)]),
-      dangerCard: shuffle(dangerExt),
-      knowledgeCard: shuffle(knowledgeExt),
-      onGameStart: true
-    }))
     return true
+  },
+  reset: () => {
+    localStorage.removeItem(SAVE)
+    localStorage.removeItem(ON_GAME_START)
   },
 
   loadCard: async () => {
@@ -289,7 +310,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   loadSave: async () => {
-    const save = localStorage.getItem('save')
+    const save = localStorage.getItem(SAVE)
     if (!save) return
     try {
       const saveObj = JSON.parse(save)
@@ -301,7 +322,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
   save: () => {
     const store = get()
     const save = JSON.stringify(store)
-    localStorage.setItem('save', save)
+    localStorage.setItem(SAVE, save)
+    localStorage.setItem(ON_GAME_START, `${get().onGameStart}`)
   },
   setEndRound: () =>
     set((state) => ({
