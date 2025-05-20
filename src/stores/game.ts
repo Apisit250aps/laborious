@@ -20,12 +20,13 @@ export interface HandCard extends Card {
   isActive: boolean
   id: number
 }
+type ChatType = 'error' | 'success' | 'warning' | 'info'
 
 export type ChatLogs = {
   role: 'system' | 'player'
   message: string
   send: Date
-  type?: 'error' | 'success' | 'warning' | 'info'
+  type?: ChatType
 }
 
 type GameStore = {

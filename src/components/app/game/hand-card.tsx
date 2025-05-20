@@ -30,10 +30,15 @@ export default function HandCard() {
                   {robin.score}
                 </div>
                 <div className="list-col-grow">
-                  <div>{robin.title} #{robin.id}</div>
-                  <div className="text-xs uppercase font-semibold opacity-60">
-                    {robin.actionData?.title}
+                  <div>
+                    {robin.title} #{robin.id + 1}
                   </div>
+                  <div className="text-xs uppercase font-semibold opacity-60">
+                    {robin.type}
+                  </div>
+                  <span className="badge badge-soft badge-warning">
+                    {robin.actionData!.title}
+                  </span>{' '}
                 </div>
                 <button className="btn btn-square btn-ghost">
                   <svg

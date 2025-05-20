@@ -27,24 +27,25 @@ export default function ChatLogs() {
   return (
     <>
       <div className="overflow-y-auto px-2 h-full">
-        {chatLogs.map((chat, index) => (
-          <div
-            key={index}
-            className={`chat ${
-              chat.role === 'system' ? 'chat-start' : 'chat-end'
-            }`}
-          >
-            <div className="chat-header">
-              {chat.role.toUpperCase()}
-              <time className="text-xs opacity-50 ml-2">
-                {formatTime(chat.send)}
-              </time>
+        {chatLogs.map((chat, index) => {
+          const chatStyle = ` chat-bubble chat-bubble-${chat.type || 'info'}`
+          return (
+            <div
+              key={index}
+              className={`chat ${
+                chat.role === 'system' ? 'chat-start' : 'chat-end'
+              }`}
+            >
+              <div className="chat-header">
+                {chat.role.toUpperCase()}
+                <time className="text-xs opacity-50 ml-2">
+                  {formatTime(chat.send)}
+                </time>
+              </div>
+              <div className={chatStyle}>{chat.message}</div>
             </div>
-            <div className={`chat-bubble ` + `chat-bubble-${chat.type!}`}>
-              {chat.message}
-            </div>
-          </div>
-        ))}
+          )
+        })}
         <div ref={endRef} /> {/* จุด scroll-to-bottom */}
       </div>
     </>

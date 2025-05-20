@@ -23,17 +23,20 @@ export default function AdventureButton() {
     setChat({
       role: 'system',
       message: `เผชิญหน้ากับ ${selected.danger.title}`,
-      send: new Date()
+      send: new Date(),
+      type: 'error'
     })
     setChat({
       role: 'system',
       message: `ค่าอันตราย ${selected.danger.danger![field]}`,
-      send: new Date()
+      send: new Date(),
+      type: 'warning'
     })
     setChat({
       role: 'system',
       message: `จั่วการ์ด ${selected.danger.pick} ใบ`,
-      send: new Date()
+      send: new Date(),
+      type: 'info'
     })
   }
 
