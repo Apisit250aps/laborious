@@ -64,6 +64,7 @@ type GameStore = {
   setChat: (logs: ChatLogs) => void
   setFight: (danger: Danger) => void
   setWhiteFlag: (danger: Danger) => void
+  setHandCard: (card: HandCard[]) => void
 
   // --- Game logic ---
   setup: () => Promise<boolean>
@@ -167,6 +168,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       onGraveyard: [...state.onGraveyard, danger.knowledge, danger.danger]
     }))
   },
+  setHandCard: (card) => set(() => ({ onHand: card })),
   // --- Card Mechanics ---
   drawCard: () => {
     const state = get()
@@ -203,7 +205,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     set(() => ({
       robinsonCard: remaining,
-      onHand: [...onHand, { ...card, isActive: true, id: onHand.length }],
+      onHand: [
+        ...onHand,
+        {
+          ...card,
+          isActive: card.type !== 'AGE',
+          id: onHand.length
+        }
+      ],
       drawPoint: drawPoint - 1
     }))
 

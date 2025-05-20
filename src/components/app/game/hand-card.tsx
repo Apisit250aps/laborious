@@ -1,11 +1,29 @@
 'use client'
 import { openModal } from '@/libs/utils'
 import { useGameStore } from '@/stores/game'
+import type { HandCard } from '@/stores/game'
 import React from 'react'
 
 export default function HandCard() {
-  const { onHand } = useGameStore()
-
+  const { onHand, setHealth, setHandCard } = useGameStore()
+  const cardAction = (card: HandCard) => {
+    if (!card.isActive) return
+    const { codex, value } = card.actionData!
+    switch (codex) {
+      case 'HP':
+        setHealth(value)
+        break
+      default:
+        break
+    }
+    const newHand = onHand.map((c) => {
+      if (c.id == card.id) {
+        return { ...c, isActive: false }
+      }
+      return c
+    })
+    setHandCard(newHand)
+  }
   return (
     <>
       <button className="btn" onClick={() => openModal('on-hand-cards')}>
@@ -40,7 +58,11 @@ export default function HandCard() {
                     {robin.actionData!.title}
                   </span>{' '}
                 </div>
-                <button className="btn btn-square btn-ghost">
+                <button
+                  className="btn btn-square btn-ghost"
+                  onClick={() => cardAction(robin!)}
+                  disabled={!robin.isActive}
+                >
                   <svg
                     className="size-[1.2em]"
                     xmlns="http://www.w3.org/2000/svg"
