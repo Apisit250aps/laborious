@@ -40,7 +40,9 @@ export default function ChatLogs() {
                 {formatTime(chat.send)}
               </time>
             </div>
-            <div className="chat-bubble">{chat.message}</div>
+            <div className={`chat-bubble ` + `chat-bubble-${chat.type!}`}>
+              {chat.message}
+            </div>
           </div>
         ))}
         <div ref={endRef} /> {/* จุด scroll-to-bottom */}

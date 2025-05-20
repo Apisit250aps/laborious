@@ -25,6 +25,7 @@ export type ChatLogs = {
   role: 'system' | 'player'
   message: string
   send: Date
+  type?: 'error' | 'success' | 'warning' | 'info'
 }
 
 type GameStore = {

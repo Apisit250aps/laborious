@@ -78,7 +78,8 @@ export default function App() {
     setChat({
       role: 'system',
       message: 'เริ่มต้นการผจญภัย',
-      send: new Date()
+      send: new Date(),
+      type:'error'
     })
   }, [setChat, setup])
 

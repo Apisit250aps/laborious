@@ -10,7 +10,8 @@ export default function AdventureButton() {
     setChat({
       role: 'system',
       message: 'อันตราย',
-      send: new Date()
+      send: new Date(),
+      type: 'warning'
     })
     const result = adventureCard()
     optionDanger(result)
@@ -20,9 +21,19 @@ export default function AdventureButton() {
   const selectDanger = (selected: Danger) => {
     setDanger(selected, danger)
     setChat({
-      role:"player",
-      message:`เผชิญหน้ากับ ${selected.danger.title}`,
-      send:new Date()
+      role: 'system',
+      message: `เผชิญหน้ากับ ${selected.danger.title}`,
+      send: new Date()
+    })
+    setChat({
+      role: 'system',
+      message: `ค่าอันตราย ${selected.danger.danger![field]}`,
+      send: new Date()
+    })
+    setChat({
+      role: 'system',
+      message: `จั่วการ์ด ${selected.danger.pick} ใบ`,
+      send: new Date()
     })
   }
 
@@ -43,7 +54,6 @@ export default function AdventureButton() {
             </button>
           </form>
           <h3 className="font-bold text-lg">ภัยอันตราย</h3>
-
           <ul className="list bg-base-100 rounded-box">
             <li className="p-4 pb-2 text-xs opacity-60 tracking-wide">
               เลือกเผชิญหน้ากับอันตราย
